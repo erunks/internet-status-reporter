@@ -1,6 +1,6 @@
+import asyncio
 import ipdb
-
-from logging import basicConfig, info, warn, error, critical
+from logging import INFO, basicConfig, getLogger
 from os import getenv
 
 class InternetStatusReporter:
@@ -8,12 +8,7 @@ class InternetStatusReporter:
     from dotenv import load_dotenv, find_dotenv
 
     load_dotenv(find_dotenv())
-    basicConfig(
-      filename=getenv('LOG_FILE'),
-      filemode='a',
-      format='%(asctime)s - %(levelname)s: %(message)s'
-    )
-    info('InternetStatusReporter is starting up')
+    self.__setup_logger()
 
     self.NETWORK_STATUS = {
       'NORMAL': 0,
@@ -30,10 +25,10 @@ class InternetStatusReporter:
     self.host_addresses = default_addresses + host_addresses
     self.last_issue_at = -1
     self.current_status = self.NETWORK_STATUS['NORMAL']
+    self.lock = asyncio.Lock()
     self.db = None
 
   def __del__(self):
-    info('InternetStatusReporter is shutting down')
     if self.db != None:
       self.db.close()
 
@@ -45,9 +40,23 @@ class InternetStatusReporter:
   def __is_down(self):
     return self.current_status != self.NETWORK_STATUS['NORMAL']
 
-  def run(self):
-    loss = self.evaluate(self.ping_hosts)
+  def __setup_logger(self):
+    basicConfig(
+      filename=getenv('LOG_FILE'),
+      filemode='a',
+      format='%(asctime)s - %(levelname)s: %(message)s',
+      level=INFO
+    )
+    self.logger = getLogger('ISR_Logger')
+    self.logger.info('InternetStatusReporter is starting up')
+
+  async def run(self):
+    loss = self.evaluate(self.ping_hosts())
     if self.__is_down():
+      await self.lock.acquire()
+      while(self.lock.locked()):
+        self.evaluate(self.ping_hosts())
+
       self.report_issue(loss, self.__downtime())
 
   def ping_hosts(self):
@@ -55,7 +64,7 @@ class InternetStatusReporter:
 
     responses = []
     for host_address in self.host_addresses:
-      response = run(f'ping -c5 {host_address} | pingparsing -'.split(), stdout=PIPE)
+      response = run(f'ping -c5 {host_address}'.split(), stdout=PIPE)
       responses.append(response)
 
     return responses
@@ -81,12 +90,13 @@ class InternetStatusReporter:
 
     if percentage_lost == 0.0:
       if self.current_status != self.NETWORK_STATUS['NORMAL']:
-        info('Internet is back to normal')
+        self.logger.info('Internet is back to normal')
+        self.lock.release()
 
       self.current_status = self.NETWORK_STATUS['NORMAL']
     else:
       if self.current_status == self.NETWORK_STATUS['NORMAL']:
-        warn(f'Internet is degraded or down. Percentage lost at: {percentage_lost}')
+        self.logger.warning(f'Internet is degraded or down. Percentage lost at: {percentage_lost}')
         self.last_issue_at = datetime.now()
 
       if percentage_lost == 100.0:
@@ -118,17 +128,18 @@ class InternetStatusReporter:
       cursor.close()
     except DB_Error as err:
       if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-        error(f'Access denied: {err}')
+        self.logger.error(f'Access denied: {err}')
       elif err.errno == errorcode.ER_BAD_DB_ERROR:
-        error(f'Database does not exist: {err}')
+        self.logger.error(f'Database does not exist: {err}')
       else:
-        critical(f'Unexpected error: {err}')
+        self.logger.critical(f'Unexpected error: {err}')
     finally:
       if self.db != None:
         self.db.close()
         self.db = None
 
-
-
-isr = InternetStatusReporter()
-isr.run()
+if __name__ == "__main__":
+  isr = InternetStatusReporter()
+  loop = asyncio.get_event_loop()
+  loop.run_until_complete(isr.run())
+  
