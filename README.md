@@ -18,13 +18,17 @@ Since it seems inevitable that an ISP will suck at giving a reliable connection,
 5. Copy the `.env.sample` to make your `.env` file with all the appropriate credentials to connect to the database
 6. Setup a cronjob to run the script, with `crontab -e` and append the following lines to the end of the file:
   ```
-   #This runs the app every minute. It is possible that this could miss some outtages if the app runs too quickly
-   */1 * * * * cd <path_to_repo>/internet-status-reporter/ && python3 app.py
+   # This runs the app every minute. It is possible that this could miss some outtages if the app runs too quickly
+   */1 * * * * cd <path_to_repo>/internet-status-reporter/ && flock -n /tmp/ISR.lck python3 app.py
+      
+   # Note the `flock -n /tmp/ISR.lck` part of the cronjob abvoe makes it so that only one instance of the program is 
+   # allowed to be run at a time. This is optional, but does provide more accurate reporting. If you decide to add 
+   # this in, make sure that you create the `/tmp/ISR.lck` file with a `touch`. 
+
    
-   #Note that this will delete the log file once a day at midnight, to avoid taking up too much memory on the machine
+   # This will delete the log file once a day at midnight, to avoid taking up too much memory on the machine
    0 0 */1 * * rm <path_to_repo>/internet-status-reporter/log.txt
   ```
-
 
 
 ### Helpful Queries
