@@ -120,8 +120,8 @@ class InternetStatusReporter:
 
       cursor = self.db.cursor()
 
-      sql = 'INSERT INTO `outtages` (`loss`, `downtime`, `created_at`) VALUES (%s, %s, %s)'
-      values = (loss, str(downtime), datetime.now())
+      sql = 'INSERT INTO `outtages` (`loss`, `downtime`, `created_at`, `maintenance`, `info`) VALUES (%s, %s, %s)'
+      values = (loss, str(downtime), datetime.now(), False, '')
       cursor.execute(sql, values)
 
       self.db.commit()
