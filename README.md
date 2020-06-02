@@ -10,9 +10,11 @@ Since it seems inevitable that an ISP will suck at giving a reliable connection,
   ```
    CREATE TABLE `outtages` (
      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-     `loss` float NOT NULLDEFAULT 0.0,
+     `loss` float NOT NULL DEFAULT '0',
      `downtime` varchar(255) NOT NULL,
-     `created_at` datetime DEFAULT NULL
+     `created_at` datetime DEFAULT NULL,
+     `maintenance` tinyint(1) NOT NULL DEFAULT '0',
+     `info` text NOT NULL
    );
  ```
 5. Copy the `.env.sample` to make your `.env` file with all the appropriate credentials to connect to the database
@@ -28,6 +30,10 @@ Since it seems inevitable that an ISP will suck at giving a reliable connection,
    
    # This will delete the log file once a day at midnight, to avoid taking up too much memory on the machine
    0 0 */1 * * rm <path_to_repo>/internet-status-reporter/log.txt
+
+
+   # This will help keep the app running the most updated version, so you don't have to manage updates by yourself
+   0 0 * * 1 cd <path_to_repo>/internet-status-reporter/ && git pull origin master
   ```
 
 
@@ -36,9 +42,11 @@ Since it seems inevitable that an ISP will suck at giving a reliable connection,
 ```
  CREATE TABLE `outtages` (
    `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-   `loss` float NOT NULLDEFAULT 0.0,
+   `loss` float NOT NULL DEFAULT '0',
    `downtime` varchar(255) NOT NULL,
-   `created_at` datetime DEFAULT NULL
+   `created_at` datetime DEFAULT NULL,
+   `maintenance` tinyint(1) NOT NULL DEFAULT '0',
+   `info` text NOT NULL
  );
 ```
 
