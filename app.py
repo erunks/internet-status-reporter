@@ -1,6 +1,5 @@
 import asyncio
 import ipdb
-from logging import INFO, basicConfig, getLogger
 from os import getenv
 
 class InternetStatusReporter:
@@ -41,13 +40,29 @@ class InternetStatusReporter:
     return self.current_status != self.NETWORK_STATUS['NORMAL']
 
   def __setup_logger(self):
+    from logging import ERROR, INFO, basicConfig, getLogger, Formatter
+    from mailHandler import MailHandler
+
+    logFormat = '%(asctime)s - %(levelname)s: %(message)s'
     basicConfig(
       filename=getenv('LOG_FILE'),
       filemode='a',
-      format='%(asctime)s - %(levelname)s: %(message)s',
+      format=logFormat,
       level=INFO
     )
+
+    mailHandler = MailHandler(
+      (getenv('SMTP_SERVER'), getenv('SMTP_PORT')),
+      getenv('PI_EMAIL'),
+      getenv('MAILTO').split(','),
+      'Internet Status Reporter: ERROR!',
+      (getenv('PI_EMAIL'), getenv('PI_EMAIL_PASSWORD'))
+    )
+    mailHandler.setLevel(ERROR)
+    mailHandler.setFormatter(Formatter(logFormat))
+
     self.logger = getLogger('ISR_Logger')
+    self.logger.addHandler(mailHandler)
     self.logger.info('InternetStatusReporter is starting up')
 
   async def run(self):
@@ -142,4 +157,3 @@ if __name__ == "__main__":
   isr = InternetStatusReporter()
   loop = asyncio.get_event_loop()
   loop.run_until_complete(isr.run())
-  
