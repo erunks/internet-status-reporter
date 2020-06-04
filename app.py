@@ -170,9 +170,9 @@ class InternetStatusReporter:
     try:
       self.db = connect(
         database = getenv('DATABASE'),
-        host = getenv('HOST'),
-        password = getenv('PASSWORD'),
-        user = getenv('USERNAME')
+        host = getenv('DB_HOST'),
+        password = getenv('DB_PASSWORD'),
+        user = getenv('DB_USERNAME')
       )
 
       cursor = self.db.cursor()
