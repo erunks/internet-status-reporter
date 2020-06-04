@@ -33,7 +33,7 @@ Since it seems inevitable that an ISP will suck at giving a reliable connection,
 
 
    # This will help keep the app running the most updated version, so you don't have to manage updates by yourself
-   0 0 * * 1 cd <path_to_repo>/internet-status-reporter/ && git pull origin master
+   0 0 * * 1 cd <path_to_repo>/internet-status-reporter/ && sh scripts/update.sh
   ```
 
 
