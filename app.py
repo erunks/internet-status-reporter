@@ -158,7 +158,7 @@ class InternetStatusReporter:
     results = {}
     try:
       for latency_address in self.latency_addresses:
-        runs = getenv('LATENCY_RUNS')
+        runs = int(getenv('LATENCY_RUNS'))
         data = measure_latency(host=latency_address, port=80, runs=runs, timeout=2.5)
         mean, deviation = self.__calculate_deviation(data)
         results[latency_address] = {
