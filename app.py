@@ -91,19 +91,24 @@ class InternetStatusReporter:
 
   async def run(self):
     loss = self.evaluate(self.ping_hosts())
+    info = self.measure_latency()
     if self.__is_down():
       await self.lock.acquire()
       while(self.lock.locked()):
         self.evaluate(self.ping_hosts())
 
-      self.report_issue(loss, self.__downtime(), self.measure_latency())
+      if info == '':
+        info =  self.measure_latency()
+
+      self.report_issue(loss, self.__downtime(), info)
 
   def ping_hosts(self):
     from subprocess import run, PIPE
 
+    ping_count = getenv('PING_COUNT')
     responses = []
     for host_address in self.host_addresses:
-      response = run(f'ping -c5 {host_address}'.split(), stdout=PIPE)
+      response = run(f'ping -c {ping_count} {host_address}'.split(), stdout=PIPE)
       responses.append(response)
 
     return responses
@@ -147,25 +152,31 @@ class InternetStatusReporter:
 
   def measure_latency(self):
     from json import dumps
+    from sys import exc_info
     from tcp_latency import measure_latency
 
     results = {}
-    for latency_address in self.latency_addresses:
-      runs = getenv('LATENCY_RUNS')
-      data = measure_latency(host=latency_address, port=80, runs=runs, timeout=2.5)
-      mean, deviation = self.__calculate_deviation(data)
-      results[latency_address] = {
-        'deviation': deviation,
-        'max': max(data),
-        'mean': mean,
-        'min': min(data)
-      }
-
-    return dumps(results)
+    try:
+      for latency_address in self.latency_addresses:
+        runs = getenv('LATENCY_RUNS')
+        data = measure_latency(host=latency_address, port=80, runs=runs, timeout=2.5)
+        mean, deviation = self.__calculate_deviation(data)
+        results[latency_address] = {
+          'deviation': deviation,
+          'max': max(data),
+          'mean': mean,
+          'min': min(data)
+        }
+    except:
+      self.logger.exception(f'Unexpected error: {exc_info()[0]}')
+    else:
+      return dumps(results)
+    
+    return ''
 
   def report_issue(self, loss, downtime, info = ''):
     from datetime import datetime
-    from mysql.connector import Error as DB_Error, connect, errorcode
+    from mysql.connector import Error as DB_Error, ProgrammingError, connect, errorcode
 
     try:
       self.db = connect(
@@ -183,13 +194,16 @@ class InternetStatusReporter:
 
       self.db.commit()
       cursor.close()
-    except DB_Error as err:
+    except ProgrammingError as err:
       if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
         self.logger.error(f'Access denied: {err}')
-      elif err.errno == errorcode.ER_BAD_DB_ERROR:
+      else:
+        self.logger.exception(f'Unexpected error: {err}')
+    except DB_Error as err:
+      if err.errno == errorcode.ER_BAD_DB_ERROR:
         self.logger.error(f'Database does not exist: {err}')
       else:
-        self.logger.critical(f'Unexpected error: {err}')
+        self.logger.exception(f'Unexpected error: {err}')
     finally:
       if self.db != None:
         self.db.close()
