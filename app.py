@@ -5,6 +5,7 @@ from os import getenv
 class InternetStatusReporter:
   def __init__(self):
     from dotenv import load_dotenv, find_dotenv
+    from utils import get_addresses
 
     load_dotenv(find_dotenv())
     self.__setup_logger()
@@ -28,8 +29,8 @@ class InternetStatusReporter:
       'youtube.com'
     ]
 
-    self.host_addresses = default_host_addresses + self.__get_addresses(getenv('HOST_ADDRESSES'))
-    self.latency_addresses = default_latency_addresses + self.__get_addresses(getenv('LATENCY_ADDRESSES'))
+    self.host_addresses = default_host_addresses + get_addresses(getenv('HOST_ADDRESSES'))
+    self.latency_addresses = default_latency_addresses + get_addresses(getenv('LATENCY_ADDRESSES'))
     self.last_issue_at = -1
     self.current_status = self.NETWORK_STATUS['NORMAL']
     self.lock = asyncio.Lock()
@@ -38,27 +39,6 @@ class InternetStatusReporter:
   def __del__(self):
     if self.db != None:
       self.db.close()
-
-  def __calculate_deviation(self, data):
-    from functools import reduce
-    from math import sqrt
-
-    length = len(data)
-    mean = reduce(lambda a,b: a+b, data)/length
-    deviation = 0
-    for i in data:
-      deviation += pow((i-mean),2)
-
-    deviation /= (length-1)
-    return mean, sqrt(deviation)
-
-  def __downtime(self):
-    from datetime import datetime
-
-    return str(datetime.now() - self.last_issue_at)
-
-  def __get_addresses(self, addrs):
-    return list(filter(lambda x: not not x, addrs.split(',')))
 
   def __is_down(self):
     return self.current_status != self.NETWORK_STATUS['NORMAL']
@@ -90,47 +70,30 @@ class InternetStatusReporter:
     self.logger.info('InternetStatusReporter is starting up')
 
   async def run(self):
-    loss = self.evaluate(self.ping_hosts())
+    loss = self.check_status()
     info = self.measure_latency()
     if self.__is_down():
       await self.lock.acquire()
       while(self.lock.locked()):
-        self.evaluate(self.ping_hosts())
+        self.check_status()
 
       if info == '':
-        info =  self.measure_latency()
+        info = self.measure_latency()
 
-      self.report_issue(loss, self.__downtime(), info)
+      self.report_issue(loss, info)
 
-  def ping_hosts(self):
-    from subprocess import run, PIPE
+  def check_status(self):
+    from utils import calulate_percentage_lost, ping_hosts
 
-    ping_count = getenv('PING_COUNT')
-    responses = []
-    for host_address in self.host_addresses:
-      response = run(f'ping -c {ping_count} {host_address}'.split(), stdout=PIPE)
-      responses.append(response)
+    percentage_lost = calulate_percentage_lost(
+      ping_hosts(self.host_addresses, getenv('PING_COUNT'))
+    )
+    self.update_status(percentage_lost)
 
-    return responses
+    return percentage_lost
 
-  def evaluate(self, responses):
-    from pingparsing import PingParsing
-
-    stats = {
-      'sent': 0,
-      'lost': 0
-    }
-    ping_parser = PingParsing()
-    for response in responses:
-      results = ping_parser.parse(response.stdout).as_dict()
-      stats['sent'] += results['packet_transmit']
-      stats['lost'] += results['packet_loss_count']
-
-    return self.calculate_status(stats)
-
-  def calculate_status(self, stats):
+  def update_status(self, percentage_lost):
     from datetime import datetime
-    percentage_lost = (stats['lost'] / stats['sent']) * 100
 
     if percentage_lost == 0.0:
       if self.current_status != self.NETWORK_STATUS['NORMAL']:
@@ -148,35 +111,34 @@ class InternetStatusReporter:
       else:
         self.current_status = self.NETWORK_STATUS['DEGRADED']
 
-    return percentage_lost
-
   def measure_latency(self):
     from json import dumps
     from sys import exc_info
     from tcp_latency import measure_latency
+    from utils import calculate_standard_deviation
 
     results = {}
-    try:
-      for latency_address in self.latency_addresses:
+    for latency_address in self.latency_addresses:
+      try:
         runs = int(getenv('LATENCY_RUNS'))
         data = measure_latency(host=latency_address, port=80, runs=runs, timeout=2.5)
-        mean, deviation = self.__calculate_deviation(data)
+        mean, deviation = calculate_standard_deviation(data, self.logger)
+      except:
+        self.logger.exception(f'Unexpected error: {exc_info()[0]}')
+      else:
         results[latency_address] = {
           'deviation': deviation,
           'max': max(data),
           'mean': mean,
           'min': min(data)
         }
-    except:
-      self.logger.exception(f'Unexpected error: {exc_info()[0]}')
-    else:
-      return dumps(results)
-    
-    return ''
 
-  def report_issue(self, loss, downtime, info = ''):
+    return dumps(results)
+
+  def report_issue(self, loss, info = ''):
     from datetime import datetime
     from mysql.connector import Error as DB_Error, ProgrammingError, connect, errorcode
+    from utils import get_downtime
 
     try:
       self.db = connect(
@@ -189,7 +151,7 @@ class InternetStatusReporter:
       cursor = self.db.cursor()
 
       sql = 'INSERT INTO `outtages` (`loss`, `downtime`, `created_at`, `maintenance`, `info`) VALUES (%s, %s, %s, %s, %s)'
-      values = (loss, downtime, datetime.now(), False, info)
+      values = (loss, get_downtime(self.last_issue_at), datetime.now(), False, info)
       cursor.execute(sql, values)
 
       self.db.commit()
