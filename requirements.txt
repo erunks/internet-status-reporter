@@ -1,3 +1,4 @@
+freezegun
 ipdb
 mysql.connector
 pingparsing

@@ -35,7 +35,9 @@ def calculate_standard_deviation(data, logger):
     return mean, sqrt(deviation)
 
 def get_addresses(addrs):
-    return list(filter(lambda x: not not x, addrs.split(',')))
+    return list(map(lambda x: x.strip(),
+      filter(lambda x: not not x, addrs.split(','))
+    ))
 
 def get_downtime(last_issue_at):
     from datetime import datetime
