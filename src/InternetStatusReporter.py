@@ -1,5 +1,4 @@
 import asyncio
-import ipdb
 from os import getenv
 
 class InternetStatusReporter:

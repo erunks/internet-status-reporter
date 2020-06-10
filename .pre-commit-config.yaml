@@ -1,0 +1,8 @@
+-   repo: local
+    hooks:
+    -   id: unittest
+        name: Run Unittest
+        entry: sh scripts/run_tests.sh
+        language: system
+        types: [python]
+        always_run: true
