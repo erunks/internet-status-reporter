@@ -45,7 +45,6 @@ class TestMailHandler(unittest.TestCase):
     record = MagicMock()
     record.exc_text.return_value = 'Exc_text'
     record.payload.return_value = 'Payload'
-    # self.format.return_value = Mock(return_value='Formatted Record')
 
     smtp_instance_mock = MagicMock()
     smtp_mock.return_value = smtp_instance_mock
@@ -53,8 +52,6 @@ class TestMailHandler(unittest.TestCase):
     create_message_mock = MagicMock()
     create_message_mock.return_value = 'Some messsage'
     self.handler._MailHandler__create_message = create_message_mock
-    
-
 
     self.handler.emit(record)
     smtp_mock.assert_called_once_with(
