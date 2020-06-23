@@ -1,6 +1,6 @@
 # internet-status-reporter
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/db9ca02c405e41b0be621f3c68643e14)](https://app.codacy.com/manual/erunks/internet-status-reporter?utm_source=github.com&utm_medium=referral&utm_content=erunks/internet-status-reporter&utm_campaign=Badge_Grade_Dashboard)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/db9ca02c405e41b0be621f3c68643e14)](https://app.codacy.com/manual/erunks/internet-status-reporter?utm_source=github.com&utm_medium=referral&utm_content=erunks/internet-status-reporter&utm_campaign=Badge_Grade_Dashboard) [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/b7c7e48d9e4a494b9e0873486a0799e6)](https://www.codacy.com/manual/erunks/internet-status-reporter?utm_source=github.com&utm_medium=referral&utm_content=erunks/internet-status-reporter&utm_campaign=Badge_Coverage)
 
 Since it seems inevitable that an ISP will suck at giving a reliable connection, I've decided to build this app to report all the internet outtages that occur.
 
