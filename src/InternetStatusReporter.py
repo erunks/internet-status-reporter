@@ -4,7 +4,7 @@ from os import getenv
 class InternetStatusReporter:
   def __init__(self):
     from dotenv import load_dotenv, find_dotenv
-    from utils import get_addresses
+    from src.utils import get_addresses
 
     load_dotenv(find_dotenv())
     self.__setup_logger()
@@ -44,7 +44,7 @@ class InternetStatusReporter:
 
   def __setup_logger(self):
     from logging import ERROR, INFO, basicConfig, getLogger, Formatter
-    from MailHandler import MailHandler
+    from src.MailHandler import MailHandler
 
     logFormat = '%(asctime)s - %(levelname)s: %(message)s'
     basicConfig(
@@ -82,9 +82,9 @@ class InternetStatusReporter:
       self.report_issue(loss, info)
 
   def check_status(self):
-    from utils import calulate_percentage_lost, ping_hosts
+    from src.utils import calculate_percentage_lost, ping_hosts
 
-    percentage_lost = calulate_percentage_lost(
+    percentage_lost = calculate_percentage_lost(
       ping_hosts(self.host_addresses, getenv('PING_COUNT'))
     )
     self.update_status(percentage_lost)
@@ -114,7 +114,7 @@ class InternetStatusReporter:
     from json import dumps
     from sys import exc_info
     from tcp_latency import measure_latency
-    from utils import calculate_standard_deviation
+    from src.utils import calculate_standard_deviation
 
     results = {}
     for latency_address in self.latency_addresses:
@@ -137,7 +137,7 @@ class InternetStatusReporter:
   def report_issue(self, loss, info = ''):
     from datetime import datetime
     from mysql.connector import Error as DB_Error, ProgrammingError, connect, errorcode
-    from utils import get_downtime
+    from src.utils import get_downtime
 
     try:
       self.db = connect(

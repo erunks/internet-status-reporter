@@ -1,4 +1,4 @@
-def calulate_percentage_lost(responses):
+def calculate_percentage_lost(responses):
   from pingparsing import PingParsing
 
   sent,lost = 0,0

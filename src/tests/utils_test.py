@@ -1,7 +1,7 @@
 import unittest
 from freezegun import freeze_time
 from unittest.mock import Mock, patch
-from src.utils import calulate_percentage_lost, calculate_standard_deviation, get_addresses, get_downtime, ping_hosts
+from src.utils import calculate_percentage_lost, calculate_standard_deviation, get_addresses, get_downtime, ping_hosts
 
 class TestUtilMethods(unittest.TestCase):
   @classmethod
@@ -12,25 +12,27 @@ class TestUtilMethods(unittest.TestCase):
 
   def test_calculate_percentage_lost(self):
     self.assertEqual(
-      calulate_percentage_lost([self.ping_response]),
+      calculate_percentage_lost([self.ping_response]),
       0.0
     )
 
   @patch('logging.Logger')
-  def test_calculate_standard_deviation(self, mock_logger):
+  def test_calculate_standard_deviation_when_an_array_of_numbers_is_passed(self, mock_logger):
     self.assertEqual(
       calculate_standard_deviation([1,2,3,4,5], mock_logger),
       (3.0, 1.5811388300841898)
     )
 
-    mock_logger.reset_mock()
+  @patch('logging.Logger')
+  def test_calculate_standard_deviation_when_a_TypeError_is_raised(self, mock_logger):
     self.assertRaises(
       TypeError,
       calculate_standard_deviation,
       ([None, None, None, None], mock_logger)
     )
 
-    mock_logger.reset_mock()
+  @patch('logging.Logger')
+  def test_calculate_standard_deviation_when_an_exception_is_logged(self, mock_logger):
     calculate_standard_deviation([None, None, None, None], mock_logger)
     mock_logger.exception.assert_called_once()
 
