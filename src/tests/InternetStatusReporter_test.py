@@ -109,6 +109,3 @@ class TestInternetStatusReporter(unittest.TestCase):
     db_mock.commit.assert_called_once()
     cursor_mock.close.assert_called_once()
     db_mock.close.assert_called_once()
-
-
-
