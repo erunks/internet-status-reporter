@@ -36,9 +36,13 @@ class TestUtilMethods(unittest.TestCase):
     calculate_standard_deviation([None, None, None, None], mock_logger)
     mock_logger.exception.assert_called_once()
 
-  def test_get_addresses(self):
+  def test_get_addresses_when_passed_an_empty_array(self):
     self.assertEqual(get_addresses(''), [])
+
+  def test_get_addresses_when_passed_an_array_of_ip_addresses(self):
     self.assertEqual(get_addresses('8.8.4.4, 8.8.8.8'), ['8.8.4.4', '8.8.8.8'])
+
+  def test_get_addresses_when_passed_an_array_of_url_addresses(self):
     self.assertEqual(get_addresses('google.com, youtube.com'), ['google.com', 'youtube.com'])
 
   @freeze_time('2020-06-08 13:05:00')
