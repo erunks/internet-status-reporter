@@ -1,4 +1,9 @@
 .env
-__pycache__
-
 *log*
+
+# Testing and Coverage
+__pycache__/
+.pytest_cache/
+htmlcov/
+
+.coverage

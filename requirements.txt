@@ -1,4 +1,3 @@
-ipdb
 mysql.connector
 pingparsing
 python-dotenv
