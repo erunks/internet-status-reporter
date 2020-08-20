@@ -1,7 +1,7 @@
 import unittest
 from freezegun import freeze_time
 from unittest.mock import Mock, patch
-from src.utils import calculate_percentage_lost, calculate_standard_deviation, get_addresses, get_downtime, ping_hosts
+from src.utils import calculate_percentage_lost, calculate_standard_deviation, get_addresses, get_downtime, ping_hosts, remove_none
 
 class TestUtilMethods(unittest.TestCase):
   @classmethod
@@ -24,16 +24,32 @@ class TestUtilMethods(unittest.TestCase):
     )
 
   @patch('logging.Logger')
+  def test_calculate_standard_deviation_when_an_array_of_numbers_and_none_is_passed(self, mock_logger):
+    self.assertEqual(
+      calculate_standard_deviation([None,1.0,2,3,None,4.0,5], mock_logger),
+      (3.0, 1.5811388300841898)
+    )
+
+  @patch('logging.Logger')
+  def test_calculate_standard_deviation_when_an_array_of_none_is_passed(self, mock_logger):
+    self.assertEqual(
+      calculate_standard_deviation([None, None, None, None], mock_logger),
+      None
+    )
+
+  # These two tests might not be the best, since we should never expect strings to be passed
+  # here, but we do still want to check the TypeError is raised and the exception is logged.
+  # The strings will help trigger those.
+  @patch('logging.Logger')
   def test_calculate_standard_deviation_when_a_TypeError_is_raised(self, mock_logger):
     self.assertRaises(
       TypeError,
-      calculate_standard_deviation,
-      ([None, None, None, None], mock_logger)
+      calculate_standard_deviation(["String", 1.0, 2.0, 3.0], mock_logger)
     )
 
   @patch('logging.Logger')
   def test_calculate_standard_deviation_when_an_exception_is_logged(self, mock_logger):
-    calculate_standard_deviation([None, None, None, None], mock_logger)
+    calculate_standard_deviation(["some", "string", "right", "here"], mock_logger)
     mock_logger.exception.assert_called_once()
 
   def test_get_addresses_when_passed_an_empty_array(self):
@@ -59,3 +75,9 @@ class TestUtilMethods(unittest.TestCase):
 
     self.assertListEqual(ping_hosts(['8.8.4.4'], 5), [self.ping_response])
     mock_run.assert_called_with(self.ping_args, stdout=PIPE)
+
+  def test_remove_none_when_passed_an_array_of_none(self):
+    self.assertEqual(remove_none([None,None,None,None]),[])
+
+  def test_remove_none_when_passed_an_array_containing_none(self):
+    self.assertEqual(remove_none([1,None,"Something",420.69]),[1, "Something", 420.69])

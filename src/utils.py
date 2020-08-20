@@ -15,11 +15,12 @@ def calculate_standard_deviation(data, logger):
   from math import sqrt
   from sys import exc_info
 
+  data = remove_none(data)
   length = len(data)
 
   if length == 0:
     return
-    
+
   try:
     mean = reduce(lambda a,b: a+b, data)/length
     deviation = 0
@@ -53,3 +54,6 @@ def ping_hosts(host_addresses, ping_count):
     responses.append(response)
 
   return responses
+
+def remove_none(array):
+  return [e for _,e in enumerate(array) if not e == None]
