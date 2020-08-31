@@ -20,6 +20,8 @@ def calculate_standard_deviation(data, logger):
 
   if length == 0:
     return
+  elif length == 1:
+    return data[0], 0
 
   try:
     mean = reduce(lambda a,b: a+b, data)/length
