@@ -114,13 +114,14 @@ class InternetStatusReporter:
     from json import dumps
     from sys import exc_info
     from tcp_latency import measure_latency
-    from src.utils import calculate_standard_deviation
+    from src.utils import calculate_standard_deviation, remove_none
 
     results = {}
     for latency_address in self.latency_addresses:
       try:
         runs = int(getenv('LATENCY_RUNS'))
         data = measure_latency(host=latency_address, port=80, runs=runs, timeout=2.5)
+        data = remove_none(data)
         mean, deviation = calculate_standard_deviation(data, self.logger)
       except:
         self.logger.exception(f'Unexpected error: {exc_info()[0]}')
