@@ -24,16 +24,16 @@ class TestUtilMethods(unittest.TestCase):
     )
 
   @patch('logging.Logger')
-  def test_calculate_standard_deviation_when_an_array_of_numbers_and_none_is_passed(self, mock_logger):
+  def test_calculate_standard_deviation_when_an_array_of_one_number_is_passed(self, mock_logger):
     self.assertEqual(
-      calculate_standard_deviation([None,1.0,2,3,None,4.0,5], mock_logger),
-      (3.0, 1.5811388300841898)
+      calculate_standard_deviation([1.0], mock_logger),
+      (1.0, 0)
     )
 
   @patch('logging.Logger')
-  def test_calculate_standard_deviation_when_an_array_of_none_is_passed(self, mock_logger):
+  def test_calculate_standard_deviation_when_an_empty_array_is_passed(self, mock_logger):
     self.assertEqual(
-      calculate_standard_deviation([None, None, None, None], mock_logger),
+      calculate_standard_deviation([], mock_logger),
       None
     )
 
