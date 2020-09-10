@@ -1,5 +1,5 @@
 .env
-*log*
+*log.*
 
 # Testing and Coverage
 __pycache__/

@@ -1,13 +1,15 @@
 import asyncio
 from os import getenv
+from src.MailLogger import MailLogger
 
-class InternetStatusReporter:
+class InternetStatusReporter(MailLogger):
   def __init__(self):
+    super().__init__()
+
     from dotenv import load_dotenv, find_dotenv
     from src.utils import get_addresses
 
     load_dotenv(find_dotenv())
-    self.__setup_logger()
 
     self.NETWORK_STATUS = {
       'NORMAL': 0,
@@ -41,32 +43,6 @@ class InternetStatusReporter:
 
   def __is_down(self):
     return self.current_status != self.NETWORK_STATUS['NORMAL']
-
-  def __setup_logger(self):
-    from logging import ERROR, INFO, basicConfig, getLogger, Formatter
-    from src.MailHandler import MailHandler
-
-    logFormat = '%(asctime)s - %(levelname)s: %(message)s'
-    basicConfig(
-      filename=getenv('LOG_FILE'),
-      filemode='a',
-      format=logFormat,
-      level=INFO
-    )
-
-    mailHandler = MailHandler(
-      (getenv('SMTP_SERVER'), getenv('SMTP_PORT')),
-      getenv('PI_EMAIL'),
-      getenv('MAILTO').split(','),
-      'Internet Status Reporter: ERROR!',
-      (getenv('PI_EMAIL'), getenv('PI_EMAIL_PASSWORD'))
-    )
-    mailHandler.setLevel(ERROR)
-    mailHandler.setFormatter(Formatter(logFormat))
-
-    self.logger = getLogger('ISR_Logger')
-    self.logger.addHandler(mailHandler)
-    self.logger.info('InternetStatusReporter is starting up')
 
   async def run(self):
     loss = self.check_status()
