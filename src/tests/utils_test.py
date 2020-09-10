@@ -1,7 +1,7 @@
 import unittest
 from freezegun import freeze_time
 from unittest.mock import Mock, patch
-from src.utils import calculate_percentage_lost, calculate_standard_deviation, get_addresses, get_downtime, ping_hosts, remove_none
+from src.utils import calculate_percentage_lost, calculate_standard_deviation, format_modem_priority_as_int, format_modem_time_as_datetime, get_addresses, get_downtime, ping_hosts, remove_none
 
 class TestUtilMethods(unittest.TestCase):
   @classmethod
@@ -51,6 +51,18 @@ class TestUtilMethods(unittest.TestCase):
   def test_calculate_standard_deviation_when_an_exception_is_logged(self, mock_logger):
     calculate_standard_deviation(["some", "string", "right", "here"], mock_logger)
     mock_logger.exception.assert_called_once()
+
+  def test_format_modem_priority_as_int(self):
+    self.assertEqual(format_modem_priority_as_int('Error (4)'), 4)
+
+  def test_format_modem_time_as_datetime(self):
+    from datetime import datetime
+    modem_time_datetime = datetime(2020,9,9,11,10,37)
+
+    self.assertEqual(
+      format_modem_time_as_datetime('Wed Sep 09 11:10:37 2020'),
+      modem_time_datetime
+    )
 
   def test_get_addresses_when_passed_an_empty_array(self):
     self.assertEqual(get_addresses(''), [])
