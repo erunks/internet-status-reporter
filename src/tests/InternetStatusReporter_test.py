@@ -1,6 +1,6 @@
 import unittest
 from freezegun import freeze_time
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 from src.InternetStatusReporter import InternetStatusReporter
 
 class TestInternetStatusReporter(unittest.TestCase):
