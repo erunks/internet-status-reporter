@@ -1,13 +1,13 @@
 import asyncio
 from os import getenv
-from src.MailLogger import MailLogger
+from src.DatabaseInteractor import DatabaseInteractor
 
-class InternetStatusReporter(MailLogger):
+class InternetStatusReporter(DatabaseInteractor):
   def __init__(self):
-    super().__init__()
-
     from dotenv import load_dotenv, find_dotenv
     from src.utils import get_addresses
+
+    super().__init__()
 
     load_dotenv(find_dotenv())
 
@@ -35,11 +35,6 @@ class InternetStatusReporter(MailLogger):
     self.last_issue_at = -1
     self.current_status = self.NETWORK_STATUS['NORMAL']
     self.lock = asyncio.Lock()
-    self.db = None
-
-  def __del__(self):
-    if self.db != None:
-      self.db.close()
 
   def __is_down(self):
     return self.current_status != self.NETWORK_STATUS['NORMAL']
@@ -113,36 +108,15 @@ class InternetStatusReporter(MailLogger):
 
   def report_issue(self, loss, info = ''):
     from datetime import datetime
-    from mysql.connector import Error as DB_Error, ProgrammingError, connect, errorcode
     from src.utils import get_downtime
 
     try:
-      self.db = connect(
-        database = getenv('DATABASE'),
-        host = getenv('DB_HOST'),
-        password = getenv('DB_PASSWORD'),
-        user = getenv('DB_USERNAME')
-      )
-
-      cursor = self.db.cursor()
+      self.connect_database()
 
       sql = 'INSERT INTO `outtages` (`loss`, `downtime`, `created_at`, `maintenance`, `info`) VALUES (%s, %s, %s, %s, %s)'
       values = (loss, get_downtime(self.last_issue_at), datetime.now(), False, info)
-      cursor.execute(sql, values)
-
-      self.db.commit()
-      cursor.close()
-    except ProgrammingError as err:
-      if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-        self.logger.error(f'Access denied: {err}')
-      else:
-        self.logger.exception(f'Unexpected error: {err}')
-    except DB_Error as err:
-      if err.errno == errorcode.ER_BAD_DB_ERROR:
-        self.logger.error(f'Database does not exist: {err}')
-      else:
-        self.logger.exception(f'Unexpected error: {err}')
+      self.execute_sql(sql, values)
+    except:
+      self.logger.exception(f'Unexpected error: {exc_info()[0]}')
     finally:
-      if self.db != None:
-        self.db.close()
-        self.db = None
+      self.disconnect_database()

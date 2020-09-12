@@ -85,27 +85,22 @@ class TestInternetStatusReporter(unittest.TestCase):
     )
 
   @freeze_time('2020-06-08 13:05:00')
-  @patch('mysql.connector.connect')
-  def test_report_issue(self, connect_mock):
+  def test_report_issue(self):
     from datetime import datetime
     self.reporter.last_issue_at = datetime(2020,6,8,13,0) 
     loss = 42.0
     info = ''
 
-    db_mock = MagicMock()
-    connect_mock.return_value = db_mock
-    cursor_mock = MagicMock()
-    db_mock.cursor.return_value = cursor_mock
+    # Probably a better way to handle mocking this:
+    self.reporter.connect_database = MagicMock()
+    self.reporter.execute_sql = MagicMock()
+    self.reporter.disconnect_database = MagicMock()
 
     self.reporter.report_issue(loss, info)
-    connect_mock.assert_called_once()
-    db_mock.cursor.assert_called_once()
 
-    cursor_mock.execute.assert_called_once_with(
+    self.reporter.connect_database.assert_called_once()
+    self.reporter.execute_sql.assert_called_once_with(
       'INSERT INTO `outtages` (`loss`, `downtime`, `created_at`, `maintenance`, `info`) VALUES (%s, %s, %s, %s, %s)',
       (loss, '0:05:00', datetime.now(), False, info)
     )
-
-    db_mock.commit.assert_called_once()
-    cursor_mock.close.assert_called_once()
-    db_mock.close.assert_called_once()
+    self.reporter.disconnect_database.assert_called_once()

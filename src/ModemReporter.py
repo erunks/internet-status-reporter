@@ -1,22 +1,21 @@
 from os import getenv
+from src.DatabaseInteractor import DatabaseInteractor
 
-class ModemReporter:
+class ModemReporter(DatabaseInteractor):
   def __init__(self):
     from dotenv import load_dotenv, find_dotenv
+
+    super().__init__()
+
     load_dotenv(find_dotenv())
 
     MODEM_ADDRESS = getenv('MODEM_ADDRESS')
 
     self.__setup_browser()
-    self.db = None
     self.pages = {
       'home': MODEM_ADDRESS,
       'event_log': MODEM_ADDRESS + '/MotoSnmpLog.asp'
     }
-
-  def __del__(self):
-    if self.db != None:
-      self.db.close()
 
   def __setup_browser(self):
     from mechanicalsoup import StatefulBrowser
@@ -41,18 +40,10 @@ class ModemReporter:
     self.browser.submit_selected()
 
   def report_events(self, events):
-    from mysql.connector import Error as DB_Error, ProgrammingError, connect, errorcode
     from utils import format_modem_priority_as_int, format_modem_time_as_datetime
 
     try:
-      self.db = connect(
-        database = getenv('DATABASE'),
-        host = getenv('DB_HOST'),
-        password = getenv('DB_PASSWORD'),
-        user = getenv('DB_USERNAME')
-      )
-
-      cursor = self.db.cursor()
+      self.connect_database()
       sql = 'INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES (%s, %s, %s, %s)'
 
       for event in events:
@@ -60,24 +51,10 @@ class ModemReporter:
         created_at = str(format_modem_time_as_datetime(time))
 
         values = (description, format_modem_priority_as_int(priority), created_at, False)
-        cursor.execute(sql, values)
+        self.execute_sql(sql, values)
+      
+      self.disconnect_database()
 
-      self.db.commit()
-      cursor.close()
-    except ProgrammingError as err:
-      if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-        self.logger.error(f'Access denied: {err}')
-      else:
-        self.logger.exception(f'Unexpected error: {err}')
-    except DB_Error as err:
-      if err.errno == errorcode.ER_BAD_DB_ERROR:
-        self.logger.error(f'Database does not exist: {err}')
-      else:
-        self.logger.exception(f'Unexpected error: {err}')
-    finally:
-      if self.db != None:
-        self.db.close()
-        self.db = None
 
   def scrape_events(self):
     from pprint import pprint
@@ -106,6 +83,5 @@ class ModemReporter:
     
     return event_logs
 
-  
 mr = ModemReporter()
 mr.run()
