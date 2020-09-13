@@ -40,6 +40,7 @@ class ModemReporter(DatabaseInteractor):
     self.browser.submit_selected()
 
   def report_events(self, events):
+    from sys import exc_info
     from utils import format_modem_priority_as_int, format_modem_time_as_datetime
 
     try:
@@ -51,10 +52,12 @@ class ModemReporter(DatabaseInteractor):
         created_at = str(format_modem_time_as_datetime(time))
 
         values = (description, format_modem_priority_as_int(priority), created_at, False)
-        self.execute_sql(sql, values)
+        self.execute_sql_with_commit(sql, values)
       
       self.disconnect_database()
 
+    except:
+      self.logger.exception(f'Unexpected error: {exc_info()[0]}')
 
   def scrape_events(self):
     from pprint import pprint
@@ -83,5 +86,5 @@ class ModemReporter(DatabaseInteractor):
     
     return event_logs
 
-mr = ModemReporter()
-mr.run()
+# mr = ModemReporter()
+# mr.run()

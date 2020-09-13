@@ -93,13 +93,13 @@ class TestInternetStatusReporter(unittest.TestCase):
 
     # Probably a better way to handle mocking this:
     self.reporter.connect_database = MagicMock()
-    self.reporter.execute_sql = MagicMock()
+    self.reporter.execute_sql_with_commit = MagicMock()
     self.reporter.disconnect_database = MagicMock()
 
     self.reporter.report_issue(loss, info)
 
     self.reporter.connect_database.assert_called_once()
-    self.reporter.execute_sql.assert_called_once_with(
+    self.reporter.execute_sql_with_commit.assert_called_once_with(
       'INSERT INTO `outtages` (`loss`, `downtime`, `created_at`, `maintenance`, `info`) VALUES (%s, %s, %s, %s, %s)',
       (loss, '0:05:00', datetime.now(), False, info)
     )

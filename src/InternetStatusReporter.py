@@ -115,7 +115,7 @@ class InternetStatusReporter(DatabaseInteractor):
 
       sql = 'INSERT INTO `outtages` (`loss`, `downtime`, `created_at`, `maintenance`, `info`) VALUES (%s, %s, %s, %s, %s)'
       values = (loss, get_downtime(self.last_issue_at), datetime.now(), False, info)
-      self.execute_sql(sql, values)
+      self.execute_sql_with_commit(sql, values)
     except:
       self.logger.exception(f'Unexpected error: {exc_info()[0]}')
     finally:

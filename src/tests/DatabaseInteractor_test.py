@@ -8,6 +8,10 @@ DATABASE = 'database'
 DB_HOST = 'host'
 DB_PASSWORD = 'password'
 DB_USERNAME = 'username'
+
+SQL = 'sql string'
+VALUES = (1, 2, True)
+
 CONNECTION_MOCK = MagicMock()
 
 def mocked_getenv(*args, **kwargs):
@@ -28,7 +32,7 @@ class TestDatabaseInteractor(unittest.TestCase):
 
   @classmethod
   def resetMocks(self):
-    CONNECTION_MOCK.reset_mock()
+    CONNECTION_MOCK.reset_mock(return_value=True, side_effect=True)
     self.databseInteractor.logger.reset_mock()
 
   @patch('os.getenv', side_effect=mocked_getenv)
@@ -87,20 +91,52 @@ class TestDatabaseInteractor(unittest.TestCase):
     self.databseInteractor.disconnect_database()
     CONNECTION_MOCK.close.assert_not_called()
 
-  def test_execute_sql(self):
+  def test_execute_sql_and_get_results(self):
+    self.resetMocks()
+    self.databseInteractor.connection = CONNECTION_MOCK
+
+    cursor_mock = MagicMock()
+    cursor_mock.fetchall.return_value = "results"
+    CONNECTION_MOCK.cursor.return_value = cursor_mock
+
+    self.assertEqual(
+      self.databseInteractor.execute_sql_and_get_results(SQL, VALUES),
+      "results"
+    )
+
+    self.databseInteractor.connection.cursor.assert_called_once()
+    cursor_mock.execute.assert_called_once_with(SQL, VALUES)
+    cursor_mock.fetchall.assert_called_once()
+    cursor_mock.close.assert_called_once()
+
+  def test_execute_sql_and_get_results_and_an_unexpected_error_is_raised(self):
+    self.resetMocks()
+    self.databseInteractor.connection = CONNECTION_MOCK
+
+    CONNECTION_MOCK.cursor.side_effect = Exception()
+
+    self.databseInteractor.execute_sql_and_get_results(SQL, VALUES)
+    self.databseInteractor.logger.exception.assert_called_once()
+
+  def test_execute_sql_with_commit(self):
     self.resetMocks()
     self.databseInteractor.connection = CONNECTION_MOCK
 
     cursor_mock = MagicMock()
     CONNECTION_MOCK.cursor.return_value = cursor_mock
 
-    SQL = 'sql string'
-    VALUES = (1, 2, True)
-
-    self.databseInteractor.execute_sql(SQL, VALUES)
+    self.databseInteractor.execute_sql_with_commit(SQL, VALUES)
 
     self.databseInteractor.connection.cursor.assert_called_once()
     cursor_mock.execute.assert_called_once_with(SQL, VALUES)
     self.databseInteractor.connection.commit.assert_called_once()
     cursor_mock.close.assert_called_once()
 
+  def test_execute_sql_with_commit_and_an_unexpected_error_is_raised(self):
+    self.resetMocks()
+    self.databseInteractor.connection = CONNECTION_MOCK
+
+    CONNECTION_MOCK.cursor.side_effect = Exception()
+
+    self.databseInteractor.execute_sql_with_commit(SQL, VALUES)
+    self.databseInteractor.logger.exception.assert_called_once()

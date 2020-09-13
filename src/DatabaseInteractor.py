@@ -43,12 +43,32 @@ class DatabaseInteractor(MailLogger):
       self.connection.close()
       self.connection = None
 
-  def execute_sql(self, sql, values):
+  def execute_sql_and_get_results(self, sql, values = None):
     from mysql.connector import Error as DB_Error, ProgrammingError, errorcode
 
     try:
       cursor = self.connection.cursor()
-      cursor.execute(sql, values)
+      if values == None:
+        cursor.execute(sql)
+      else:
+        cursor.execute(sql, values)
+      results = cursor.fetchall()
+      cursor.close()
+
+      return results
+
+    except:
+      self.logger.exception(f'Unexpected error: {exc_info()[0]}')
+  
+  def execute_sql_with_commit(self, sql, values = None):
+    from mysql.connector import Error as DB_Error, ProgrammingError, errorcode
+
+    try:
+      cursor = self.connection.cursor()
+      if values == None:
+        cursor.execute(sql)
+      else:
+        cursor.execute(sql, values)
       self.connection.commit()
       cursor.close()
 
