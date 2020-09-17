@@ -13,8 +13,9 @@ class ModemReporter(DatabaseInteractor):
 
     self.__setup_browser()
     self.pages = {
+      'event_log': MODEM_ADDRESS + '/MotoSnmpLog.asp',
       'home': MODEM_ADDRESS,
-      'event_log': MODEM_ADDRESS + '/MotoSnmpLog.asp'
+      'logout': MODEM_ADDRESS + '/logout.asp'
     }
 
   def __setup_browser(self):
@@ -26,6 +27,7 @@ class ModemReporter(DatabaseInteractor):
   def run(self):
     self.login()
     self.report_events(self.scrape_events())
+    self.logout()
 
   def filter_event_logs(self, event_logs):
     last_event = self.get_last_logged_event()
@@ -84,6 +86,9 @@ class ModemReporter(DatabaseInteractor):
     form.choose_submit(submit_button)
 
     self.browser.submit_selected()
+
+  def logout(self):
+    self.browser.open(self.pages['logout'])
 
   def report_events(self, events):
     from sys import exc_info

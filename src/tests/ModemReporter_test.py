@@ -31,6 +31,7 @@ class TestModemReporter(unittest.TestCase):
   @classmethod
   @patch('os.getenv', side_effect=mocked_getenv)
   def setUpClass(self, _getenv_mock):
+    print('------------------------------ ModemReporter Tests ------------------------------')
     self.modemReporter = ModemReporter()
     self.modemReporter.browser = BROWSER_MOCK
     self.modemReporter.connection = CONNECTION_MOCK
@@ -256,6 +257,18 @@ class TestModemReporter(unittest.TestCase):
     CONNECTION_MOCK.commit.assert_called_once()
     cursor_mock.close.assert_called_once()
     CONNECTION_MOCK.close.assert_called_once()
+
+  @patch.object(ModemReporter, 'login')
+  @patch.object(ModemReporter, 'logout')
+  @patch.object(ModemReporter, 'report_events')
+  @patch.object(ModemReporter, 'scrape_events')
+  def test_run(self, login_mock, logout_mock, report_events_mock, scrape_events_mock):
+    self.modemReporter.run()
+
+    login_mock.assert_called_once()
+    scrape_events_mock.assert_called_once()
+    report_events_mock.assert_called_once()
+    logout_mock.assert_called_once()
 
   def test_scrape_events(self):
     from bs4 import BeautifulSoup

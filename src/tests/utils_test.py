@@ -7,6 +7,7 @@ class TestUtilMethods(unittest.TestCase):
   @classmethod
   def setUpClass(self):
     from subprocess import CompletedProcess
+    print('------------------------------ Utils Tests ------------------------------')
     self.ping_args = ['ping', '-c', '5', '8.8.4.4']
     self.ping_response = CompletedProcess(args=self.ping_args, returncode=0, stdout=b'PING 8.8.4.4 (8.8.4.4): 56 data bytes\n64 bytes from 8.8.4.4: icmp_seq=0 ttl=53 time=33.309 ms\n64 bytes from 8.8.4.4: icmp_seq=1 ttl=53 time=31.647 ms\n64 bytes from 8.8.4.4: icmp_seq=2 ttl=53 time=35.030 ms\n64 bytes from 8.8.4.4: icmp_seq=3 ttl=53 time=35.696 ms\n64 bytes from 8.8.4.4: icmp_seq=4 ttl=53 time=33.078 ms\n\n--- 8.8.4.4 ping statistics ---\n5 packets transmitted, 5 packets received, 0.0% packet loss\nround-trip min/avg/max/stddev = 31.647/33.752/35.696/1.449 ms\n')
 

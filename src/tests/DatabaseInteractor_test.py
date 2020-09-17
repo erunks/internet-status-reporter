@@ -28,6 +28,7 @@ def mocked_getenv(*args, **kwargs):
 class TestDatabaseInteractor(unittest.TestCase):
   @classmethod
   def setUpClass(self):
+    print('------------------------------ DatabaseInteractor Tests ------------------------------')
     self.databseInteractor = DatabaseInteractor()
     self.databseInteractor.logger = MagicMock()
 

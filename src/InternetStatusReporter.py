@@ -1,6 +1,7 @@
 import asyncio
 from os import getenv
 from src.DatabaseInteractor import DatabaseInteractor
+from src.ModemReporter import ModemReporter
 
 class InternetStatusReporter(DatabaseInteractor):
   def __init__(self):
@@ -30,6 +31,7 @@ class InternetStatusReporter(DatabaseInteractor):
       'youtube.com'
     ]
 
+    self.modemReporter = ModemReporter()
     self.host_addresses = default_host_addresses + get_addresses(getenv('HOST_ADDRESSES'))
     self.latency_addresses = default_latency_addresses + get_addresses(getenv('LATENCY_ADDRESSES'))
     self.last_issue_at = -1
@@ -68,6 +70,7 @@ class InternetStatusReporter(DatabaseInteractor):
     if percentage_lost == 0.0:
       if self.current_status != self.NETWORK_STATUS['NORMAL']:
         self.logger.info('Internet is back to normal')
+        self.modemReporter.run()
         self.lock.release()
 
       self.current_status = self.NETWORK_STATUS['NORMAL']

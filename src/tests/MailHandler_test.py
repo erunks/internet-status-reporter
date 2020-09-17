@@ -6,6 +6,7 @@ from src.MailHandler import MailHandler
 class TestMailHandler(unittest.TestCase):
   @classmethod
   def setUpClass(self):
+    print('------------------------------ MailHandler Tests ------------------------------')
     self.sender = 'pi@gmail.com'
     self.receiver = 'receiver@gmail.com'
     self.subject = 'Internet Status Reporter: ERROR!'
