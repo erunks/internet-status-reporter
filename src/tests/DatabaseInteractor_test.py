@@ -23,6 +23,7 @@ def mocked_getenv(*args, **kwargs):
     return DB_PASSWORD
   elif args[0] == 'DB_USERNAME':
     return DB_USERNAME
+  return getenv(*args)
 
 class TestDatabaseInteractor(unittest.TestCase):
   @classmethod
@@ -33,6 +34,8 @@ class TestDatabaseInteractor(unittest.TestCase):
   @classmethod
   def resetMocks(self):
     CONNECTION_MOCK.reset_mock(return_value=True, side_effect=True)
+    CONNECTION_MOCK.cursor.side_effect = None
+    CONNECTION_MOCK.cursor.return_value = None
     self.databseInteractor.logger.reset_mock()
 
   @patch('os.getenv', side_effect=mocked_getenv)

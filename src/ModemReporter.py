@@ -1,9 +1,9 @@
-from os import getenv
 from src.DatabaseInteractor import DatabaseInteractor
 
 class ModemReporter(DatabaseInteractor):
   def __init__(self):
     from dotenv import load_dotenv, find_dotenv
+    from os import getenv
 
     super().__init__()
 
@@ -25,9 +25,55 @@ class ModemReporter(DatabaseInteractor):
 
   def run(self):
     self.login()
-    self.scrape_events()
+    self.report_events(self.scrape_events())
+
+  def filter_event_logs(self, event_logs):
+    last_event = self.get_last_logged_event()
+
+    if last_event == None:
+      return event_logs
+
+    last_event_datetime = last_event[2]
+    return [event_log for _,event_log in enumerate(event_logs) if event_log[0] > last_event_datetime]
+
+  def get_future_event_datetime(self, events, current_index):
+    from datetime import datetime
+    from src.utils import format_modem_time_as_datetime
+  
+    future_event_datetime = None
+    for log in events[current_index:]:
+      try:
+        future_event_datetime = format_modem_time_as_datetime(log[0])
+      except:
+        pass
+
+      if not future_event_datetime == None:
+        break
+
+    if future_event_datetime == None:
+      return datetime.now()
+    return future_event_datetime
+
+  def get_last_logged_event(self):
+    result = None
+
+    try:
+      self.connect_database()
+
+      sql = "SELECT * FROM `modem_events` ORDER BY `id` DESC LIMIT 1"
+      result = self.execute_sql_and_get_results(sql)
+      self.disconnect_database()
+
+    except:
+      self.logger.exception(f'Unexpected error: {exc_info()[0]}')
+
+    if len(result) == 0:
+      return None
+    return list(result[0])
 
   def login(self):
+    from os import getenv
+
     self.browser.open(self.pages['home'])
 
     submit_button = self.browser.get_current_page().find('input', class_='moto-login-button')
@@ -41,18 +87,31 @@ class ModemReporter(DatabaseInteractor):
 
   def report_events(self, events):
     from sys import exc_info
-    from utils import format_modem_priority_as_int, format_modem_time_as_datetime
+    from src.utils import format_modem_priority_as_int, format_modem_time_as_datetime
 
     try:
       self.connect_database()
-      sql = 'INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES (%s, %s, %s, %s)'
+      sql = "INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES "
+      value_string = '(%s, %s, %s, %s)'
 
-      for event in events:
+      event_datetime = None
+      value_list = []
+      for index,event in enumerate(events):
         time, priority, description = event
-        created_at = str(format_modem_time_as_datetime(time))
+        try:
+          event_datetime = format_modem_time_as_datetime(time)
+        except:
+          if event_datetime == None:
+            event_datetime = self.get_future_event_datetime(events, index)
+
+        created_at = str(event_datetime)
 
         values = (description, format_modem_priority_as_int(priority), created_at, False)
-        self.execute_sql_with_commit(sql, values)
+
+        value_list.append(value_string % values)
+
+      full_sql_string = sql + ", ".join(value_list)
+      self.execute_sql_with_commit(full_sql_string)
       
       self.disconnect_database()
 
@@ -82,9 +141,5 @@ class ModemReporter(DatabaseInteractor):
           continue
 
         event_logs.append(data)
-        pprint(data)
-    
-    return event_logs
 
-# mr = ModemReporter()
-# mr.run()
+    return event_logs
