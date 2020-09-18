@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Run setup
+        run: |
+          python3 -m pip install -r requirements.txt
+          python3 -m pip install -r requirements-dev.txt
+          cp .env.sample .env
+          
+      - name: Run tests
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/run_tests.sh
+          sh $GITHUB_WORKSPACE/scripts/run_tests.sh
+     
