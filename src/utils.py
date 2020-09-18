@@ -59,6 +59,23 @@ def get_downtime(last_issue_at):
 
   return str(datetime.now() - last_issue_at)
 
+def get_future_event_datetime(events, current_index):
+  from datetime import datetime
+
+  future_event_datetime = None
+  for log in events[current_index:]:
+    try:
+      future_event_datetime = format_modem_time_as_datetime(log[0])
+    except:
+      pass
+
+    if not future_event_datetime == None:
+      break
+
+  if future_event_datetime == None:
+    return datetime.now()
+  return future_event_datetime
+
 def ping_hosts(host_addresses, ping_count):
   from subprocess import run, PIPE
 

@@ -32,10 +32,10 @@ class MailHandler(SMTPHandler):
       )
 
       if self.username:
-          smtp.ehlo()
-          smtp.starttls(context=context)
-          smtp.ehlo()
-          smtp.login(self.username, self.password)
+        smtp.ehlo()
+        smtp.starttls(context=context)
+        smtp.ehlo()
+        smtp.login(self.username, self.password)
 
       smtp.sendmail(self.fromaddr, self.toaddrs, message)
       smtp.quit()

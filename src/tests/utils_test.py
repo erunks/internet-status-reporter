@@ -1,7 +1,7 @@
 import unittest
 from freezegun import freeze_time
 from unittest.mock import Mock, patch
-from src.utils import calculate_percentage_lost, calculate_standard_deviation, format_modem_priority_as_int, format_modem_time_as_datetime, get_addresses, get_downtime, ping_hosts, remove_none
+from src.utils import calculate_percentage_lost, calculate_standard_deviation, format_modem_priority_as_int, format_modem_time_as_datetime, get_addresses, get_downtime, get_future_event_datetime, ping_hosts, remove_none
 
 class TestUtilMethods(unittest.TestCase):
   @classmethod
@@ -80,6 +80,35 @@ class TestUtilMethods(unittest.TestCase):
     last_issue_at = datetime(2020,6,8,13,0)
 
     self.assertEqual(get_downtime(last_issue_at), '0:05:00')
+
+  def test_get_future_event_datetime_when_there_is_a_future_datetime(self):
+    from datetime import datetime
+
+    FUTURE_EVENT_LOGS = [
+      ['Time Not Established', 4, "This was the last description"],
+      ['Time Not Established', 4, "This isn't the last description"],
+      ['Wed Sep 16 09:00:00 2020', 4, "This is now the last description"]
+    ]
+
+    self.assertEqual(
+      get_future_event_datetime(FUTURE_EVENT_LOGS, 0),
+      datetime(2020, 9, 16, 9, 0, 0)
+    )
+
+  @freeze_time('2020-09-15 13:05:00')
+  def test_get_future_event_datetime_when_there_is_no_future_datetime(self):
+    from datetime import datetime
+
+    FUTURE_EVENT_LOGS = [
+      ['Time Not Established', 4, "This was the last description"],
+      ['Time Not Established', 4, "This isn't the last description"],
+      ['Time Not Established', 4, "This is now the last description"]
+    ]
+
+    self.assertEqual(
+      get_future_event_datetime(FUTURE_EVENT_LOGS, 0),
+      datetime(2020, 9, 15, 13, 5, 0)
+    )
 
   @patch('subprocess.run')
   def test_ping_hosts(self, mock_run):

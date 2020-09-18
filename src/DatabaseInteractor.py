@@ -12,7 +12,7 @@ class DatabaseInteractor(MailLogger):
 
   def __del__(self):
     self.disconnect_database()
-  
+
   def connect_database(self):
     from mysql.connector import Error as DB_Error, ProgrammingError, connect, errorcode
     from os import getenv
@@ -44,8 +44,6 @@ class DatabaseInteractor(MailLogger):
       self.connection = None
 
   def execute_sql_and_get_results(self, sql, values = None):
-    from mysql.connector import Error as DB_Error, ProgrammingError, errorcode
-
     try:
       cursor = self.connection.cursor()
       if values == None:
@@ -59,10 +57,8 @@ class DatabaseInteractor(MailLogger):
 
     except:
       self.logger.exception(f'Unexpected error: {exc_info()[0]}')
-  
-  def execute_sql_with_commit(self, sql, values = None):
-    from mysql.connector import Error as DB_Error, ProgrammingError, errorcode
 
+  def execute_sql_with_commit(self, sql, values = None):
     try:
       cursor = self.connection.cursor()
       if values == None:

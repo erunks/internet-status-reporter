@@ -1,7 +1,6 @@
 import unittest
 from datetime import datetime
 from freezegun import freeze_time
-from mysql.connector import Error as DB_Error, ProgrammingError, errorcode
 from os import getenv
 from unittest.mock import MagicMock, patch
 from src.ModemReporter import ModemReporter
@@ -85,33 +84,6 @@ class TestModemReporter(unittest.TestCase):
     self.assertEqual(
       self.modemReporter.filter_event_logs(EVENT_LOGS),
       EVENT_LOGS
-    )
-
-  def test_get_future_event_datetime_when_there_is_a_future_datetime(self):
-    CURRENT_INDEX = len(EVENT_LOGS)
-    FUTURE_EVENT_LOGS = EVENT_LOGS + [
-      ['Time Not Established', 4, "This was the last description"],
-      ['Time Not Established', 4, "This isn't the last description"],
-      ['Wed Sep 16 09:00:00 2020', 4, "This is now the last description"]
-    ]
-
-    self.assertEqual(
-      self.modemReporter.get_future_event_datetime(FUTURE_EVENT_LOGS,CURRENT_INDEX),
-      datetime(2020, 9, 16, 9, 0, 0)
-    )
-
-  @freeze_time('2020-09-15 13:05:00')
-  def test_get_future_event_datetime_when_there_is_no_future_datetime(self):
-    CURRENT_INDEX = len(EVENT_LOGS)
-    FUTURE_EVENT_LOGS = EVENT_LOGS + [
-      ['Time Not Established', 4, "This was the last description"],
-      ['Time Not Established', 4, "This isn't the last description"],
-      ['Time Not Established', 4, "This is now the last description"]
-    ]
-
-    self.assertEqual(
-      self.modemReporter.get_future_event_datetime(FUTURE_EVENT_LOGS,CURRENT_INDEX),
-      datetime(2020, 9, 15, 13, 5, 0)
     )
 
   @patch('mysql.connector.connect')

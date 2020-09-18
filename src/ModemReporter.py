@@ -38,25 +38,8 @@ class ModemReporter(DatabaseInteractor):
     last_event_datetime = last_event[2]
     return [event_log for _,event_log in enumerate(event_logs) if event_log[0] > last_event_datetime]
 
-  def get_future_event_datetime(self, events, current_index):
-    from datetime import datetime
-    from src.utils import format_modem_time_as_datetime
-  
-    future_event_datetime = None
-    for log in events[current_index:]:
-      try:
-        future_event_datetime = format_modem_time_as_datetime(log[0])
-      except:
-        pass
-
-      if not future_event_datetime == None:
-        break
-
-    if future_event_datetime == None:
-      return datetime.now()
-    return future_event_datetime
-
   def get_last_logged_event(self):
+    from sys import exc_info
     result = None
 
     try:
@@ -92,7 +75,7 @@ class ModemReporter(DatabaseInteractor):
 
   def report_events(self, events):
     from sys import exc_info
-    from src.utils import format_modem_priority_as_int, format_modem_time_as_datetime
+    from src.utils import format_modem_priority_as_int, format_modem_time_as_datetime, get_future_event_datetime
 
     try:
       self.connect_database()
@@ -107,7 +90,7 @@ class ModemReporter(DatabaseInteractor):
           event_datetime = format_modem_time_as_datetime(time)
         except:
           if event_datetime == None:
-            event_datetime = self.get_future_event_datetime(events, index)
+            event_datetime = get_future_event_datetime(events, index)
 
         created_at = str(event_datetime)
 
@@ -117,15 +100,13 @@ class ModemReporter(DatabaseInteractor):
 
       full_sql_string = sql + ", ".join(value_list)
       self.execute_sql_with_commit(full_sql_string)
-      
+
       self.disconnect_database()
 
     except:
       self.logger.exception(f'Unexpected error: {exc_info()[0]}')
 
   def scrape_events(self):
-    from pprint import pprint
-
     self.browser.open(self.pages['event_log'])
 
     table_content = self.browser.get_current_page().find('table', class_='moto-table-content')

@@ -1,3 +1,4 @@
+MechanicalSoup
 mysql.connector
 pingparsing
 python-dotenv

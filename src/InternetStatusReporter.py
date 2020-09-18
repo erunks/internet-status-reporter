@@ -112,6 +112,7 @@ class InternetStatusReporter(DatabaseInteractor):
   def report_issue(self, loss, info = ''):
     from datetime import datetime
     from src.utils import get_downtime
+    from sys import exc_info
 
     try:
       self.connect_database()
