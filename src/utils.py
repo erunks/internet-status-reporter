@@ -36,15 +36,45 @@ def calculate_standard_deviation(data, logger):
   else:
     return mean, sqrt(deviation)
 
+def format_modem_priority_as_int(priority):
+  import re
+
+  pattern = r'.+\((\d)\)$'
+  result = re.match(pattern, priority)
+  return int(result.group(1))
+
+def format_modem_time_as_datetime(time):
+  from datetime import datetime
+
+  time_fmt = '%a %b %d %H:%M:%S %Y'
+  return datetime.strptime(time, time_fmt)
+
 def get_addresses(addrs):
-    return list(map(lambda x: x.strip(),
-      filter(lambda x: not not x, addrs.split(','))
-    ))
+  return list(map(lambda x: x.strip(),
+    filter(lambda x: not not x, addrs.split(','))
+  ))
 
 def get_downtime(last_issue_at):
-    from datetime import datetime
+  from datetime import datetime
 
-    return str(datetime.now() - last_issue_at)
+  return str(datetime.now() - last_issue_at)
+
+def get_future_event_datetime(events, current_index):
+  from datetime import datetime
+
+  future_event_datetime = None
+  for log in events[current_index:]:
+    try:
+      future_event_datetime = format_modem_time_as_datetime(log[0])
+    except:
+      pass
+
+    if not future_event_datetime == None:
+      break
+
+  if future_event_datetime == None:
+    return datetime.now()
+  return future_event_datetime
 
 def ping_hosts(host_addresses, ping_count):
   from subprocess import run, PIPE

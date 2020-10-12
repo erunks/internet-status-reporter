@@ -6,14 +6,20 @@ from src.InternetStatusReporter import InternetStatusReporter
 class TestInternetStatusReporter(unittest.TestCase):
   @classmethod
   def setUpClass(self):
+    print('------------------------------ InternetStatusReporter Tests ------------------------------')
     self.reporter = InternetStatusReporter()
     self.reporter.lock = MagicMock()
     self.reporter.logger = MagicMock()
+    self.reporter.modemReporter = MagicMock()
+
+  def setUp(self):
+    self.resetMocks()
 
   @classmethod
-  def reset_all_mocks(self):
+  def resetMocks(self):
     self.reporter.lock.reset_mock()
     self.reporter.logger.reset_mock()
+    self.reporter.modemReporter.reset_mock()
 
   def test_is_down_when_current_status_is_normal(self):
     self.reporter.current_status = self.reporter.NETWORK_STATUS['NORMAL']
@@ -44,7 +50,6 @@ class TestInternetStatusReporter(unittest.TestCase):
 
   @patch('datetime.datetime')
   def test_update_status_when_current_status_is_normal_and_loss_is_not_zero(self, datetime_mock):
-    self.reset_all_mocks()
     normal_status = self.reporter.NETWORK_STATUS['NORMAL']
     self.reporter.current_status = normal_status
     self.reporter.update_status(0.1)
@@ -55,7 +60,6 @@ class TestInternetStatusReporter(unittest.TestCase):
 
   @patch('datetime.datetime')
   def test_update_status_when_current_status_is_normal_and_loss_is_max(self, datetime_mock):
-    self.reset_all_mocks()
     normal_status = self.reporter.NETWORK_STATUS['NORMAL']
     self.reporter.current_status = normal_status
     self.reporter.update_status(100.0)
@@ -65,11 +69,11 @@ class TestInternetStatusReporter(unittest.TestCase):
     datetime_mock.now.assert_called_once()
 
   def test_update_status_when_current_status_is_not_normal_and_loss_is_zero(self):
-    self.reset_all_mocks()
     self.reporter.current_status = self.reporter.NETWORK_STATUS['DOWN']
     self.reporter.update_status(0.0)
     self.assertEqual(self.reporter.current_status, self.reporter.NETWORK_STATUS['NORMAL'])
     self.reporter.logger.info.assert_called_once()
+    self.reporter.modemReporter.run.assert_called_once()
     self.reporter.lock.release.assert_called_once()
 
   @patch('os.getenv')
@@ -85,27 +89,22 @@ class TestInternetStatusReporter(unittest.TestCase):
     )
 
   @freeze_time('2020-06-08 13:05:00')
-  @patch('mysql.connector.connect')
-  def test_report_issue(self, connect_mock):
+  def test_report_issue(self):
     from datetime import datetime
     self.reporter.last_issue_at = datetime(2020,6,8,13,0) 
     loss = 42.0
     info = ''
 
-    db_mock = MagicMock()
-    connect_mock.return_value = db_mock
-    cursor_mock = MagicMock()
-    db_mock.cursor.return_value = cursor_mock
+    # Probably a better way to handle mocking this:
+    self.reporter.connect_database = MagicMock()
+    self.reporter.execute_sql_with_commit = MagicMock()
+    self.reporter.disconnect_database = MagicMock()
 
     self.reporter.report_issue(loss, info)
-    connect_mock.assert_called_once()
-    db_mock.cursor.assert_called_once()
 
-    cursor_mock.execute.assert_called_once_with(
+    self.reporter.connect_database.assert_called_once()
+    self.reporter.execute_sql_with_commit.assert_called_once_with(
       'INSERT INTO `outtages` (`loss`, `downtime`, `created_at`, `maintenance`, `info`) VALUES (%s, %s, %s, %s, %s)',
       (loss, '0:05:00', datetime.now(), False, info)
     )
-
-    db_mock.commit.assert_called_once()
-    cursor_mock.close.assert_called_once()
-    db_mock.close.assert_called_once()
+    self.reporter.disconnect_database.assert_called_once()

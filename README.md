@@ -8,7 +8,7 @@ Since it seems inevitable that an ISP will suck at giving a reliable connection,
 1. Clone the repo onto a machine that will be running for the marjority of the time (I used an old Raspberry Pi for this)
 2. Get Python3.6+ installed along with `pip`
 3. Install the required modules with `python3 -m pip install -r requirements.txt`
-4. Setup a MySQL database somewhere, and the `outtages` table with the following SQL:
+4. Setup a MySQL database somewhere, and the `modem_events` and `outtages` table with the following SQL:
   ```
    CREATE TABLE `outtages` (
      `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -18,6 +18,14 @@ Since it seems inevitable that an ISP will suck at giving a reliable connection,
      `maintenance` tinyint(1) NOT NULL DEFAULT '0',
      `info` text NOT NULL
    );
+
+   CREATE TABLE `modem_events` (
+    `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `description` varchar(255),
+    `priority` int,
+    `created_at` datetime DEFAULT NULL,
+    `maintenance` tinyint(1) NOT NULL DEFAULT '0',
+  );
  ```
 5. Copy the `.env.sample` to make your `.env` file with all the appropriate credentials to connect to the database
 6. Setup a cronjob to run the script, with `crontab -e` and append the following lines to the end of the file:
@@ -40,7 +48,7 @@ Since it seems inevitable that an ISP will suck at giving a reliable connection,
 
 
 ### Helpful Queries
-#### Setting up the Table
+#### Setting up the Tables
 ```
  CREATE TABLE `outtages` (
    `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -50,6 +58,14 @@ Since it seems inevitable that an ISP will suck at giving a reliable connection,
    `maintenance` tinyint(1) NOT NULL DEFAULT '0',
    `info` text NOT NULL
  );
+
+ CREATE TABLE `modem_events` (
+    `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `description` varchar(255),
+    `priority` int,
+    `created_at` datetime DEFAULT NULL,
+    `maintenance` tinyint(1) NOT NULL DEFAULT '0',
+  );
 ```
 
 #### Get Daily Statistics

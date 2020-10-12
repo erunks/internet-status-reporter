@@ -1,4 +1,6 @@
+beautifulsoup4
 coverage
+dotenv-cli
 freezegun
 ipdb
 pre-commit

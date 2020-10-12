@@ -5,6 +5,7 @@ from src.MailLogger import MailLogger
 class TestMailLogger(unittest.TestCase):
   @classmethod
   def setUpClass(self):
+    print('------------------------------ MailLogger Tests ------------------------------')
     self.logger = MagicMock()
     self.mail_handler = MagicMock()
 
