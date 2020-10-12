@@ -1,12 +1,12 @@
 import unittest
 from freezegun import freeze_time
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 from src.utils import calculate_percentage_lost, calculate_standard_deviation, format_modem_priority_as_int, format_modem_time_as_datetime, get_addresses, get_downtime, get_future_event_datetime, ping_hosts, remove_none
 
 class TestUtilMethods(unittest.TestCase):
   @classmethod
   def setUpClass(self):
-    from subprocess import CompletedProcess
+    from subprocess import CompletedProcess # nosec
     print('------------------------------ Utils Tests ------------------------------')
     self.ping_args = ['ping', '-c', '5', '8.8.4.4']
     self.ping_response = CompletedProcess(args=self.ping_args, returncode=0, stdout=b'PING 8.8.4.4 (8.8.4.4): 56 data bytes\n64 bytes from 8.8.4.4: icmp_seq=0 ttl=53 time=33.309 ms\n64 bytes from 8.8.4.4: icmp_seq=1 ttl=53 time=31.647 ms\n64 bytes from 8.8.4.4: icmp_seq=2 ttl=53 time=35.030 ms\n64 bytes from 8.8.4.4: icmp_seq=3 ttl=53 time=35.696 ms\n64 bytes from 8.8.4.4: icmp_seq=4 ttl=53 time=33.078 ms\n\n--- 8.8.4.4 ping statistics ---\n5 packets transmitted, 5 packets received, 0.0% packet loss\nround-trip min/avg/max/stddev = 31.647/33.752/35.696/1.449 ms\n')
@@ -112,7 +112,7 @@ class TestUtilMethods(unittest.TestCase):
 
   @patch('subprocess.run')
   def test_ping_hosts(self, mock_run):
-    from subprocess import PIPE
+    from subprocess import PIPE # nosec
     mock_run.return_value = self.ping_response
 
     self.assertListEqual(ping_hosts(['8.8.4.4'], 5), [self.ping_response])

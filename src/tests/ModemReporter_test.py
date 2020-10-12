@@ -1,13 +1,13 @@
 import unittest
 from datetime import datetime
+from dotenv import load_dotenv, find_dotenv
 from freezegun import freeze_time
-from os import getenv
 from unittest.mock import MagicMock, patch
 from src.ModemReporter import ModemReporter
 
+load_dotenv(find_dotenv(".env.test"))
+
 MODEM_ADDRESS = 'http://0.0.0.0'
-MODEM_PASSWORD = 'password'
-MODEM_USERNAME = 'username'
 
 BROWSER_MOCK = MagicMock()
 CONNECTION_MOCK = MagicMock()
@@ -17,19 +17,9 @@ EVENT_LOGS = [
   [datetime(2020, 9, 15, 13, 30, 00), 4, "This is the last description"]
 ]
 
-def mocked_getenv(*args, **kwargs):
-  if args[0] == 'MODEM_ADDRESS':
-    return MODEM_ADDRESS
-  elif args[0] == 'MODEM_USERNAME':
-    return MODEM_USERNAME
-  elif args[0] == 'MODEM_PASSWORD':
-    return MODEM_PASSWORD
-  return getenv(*args)
-
 class TestModemReporter(unittest.TestCase):
   @classmethod
-  @patch('os.getenv', side_effect=mocked_getenv)
-  def setUpClass(self, _getenv_mock):
+  def setUpClass(self):
     print('------------------------------ ModemReporter Tests ------------------------------')
     self.modemReporter = ModemReporter()
     self.modemReporter.browser = BROWSER_MOCK
@@ -130,8 +120,7 @@ class TestModemReporter(unittest.TestCase):
     cursor_mock.close.assert_called_once()
     CONNECTION_MOCK.close.assert_called_once()
 
-  @patch('os.getenv', side_effect=mocked_getenv)
-  def test_login(self, getenv_mock):
+  def test_login(self):
     form_mock = MagicMock()
     self.modemReporter.browser.select_form.return_value = form_mock
 
@@ -139,10 +128,8 @@ class TestModemReporter(unittest.TestCase):
 
     self.modemReporter.browser.open.assert_called_once_with(MODEM_ADDRESS)
     self.modemReporter.browser.select_form.assert_called_once()
-    getenv_mock.assert_any_call('MODEM_USERNAME')
-    form_mock.set.assert_any_call('loginUsername', MODEM_USERNAME)
-    getenv_mock.assert_any_call('MODEM_PASSWORD')
-    form_mock.set.assert_any_call('loginPassword', MODEM_PASSWORD)
+    form_mock.set.assert_any_call('loginUsername', 'username')
+    form_mock.set.assert_any_call('loginPassword', 'password') # nosec # noqa
     form_mock.choose_submit.assert_called_once()
     self.modemReporter.browser.submit_selected.assert_called_once()
 

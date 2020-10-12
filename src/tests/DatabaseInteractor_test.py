@@ -1,29 +1,15 @@
 import unittest
+from dotenv import load_dotenv, find_dotenv
 from mysql.connector import Error as DB_Error, ProgrammingError, errorcode
-from os import getenv
 from unittest.mock import MagicMock, patch
 from src.DatabaseInteractor import DatabaseInteractor
 
-DATABASE = 'database'
-DB_HOST = 'host'
-DB_PASSWORD = 'password'
-DB_USERNAME = 'username'
+load_dotenv(find_dotenv(".env.test"))
 
 SQL = 'sql string'
 VALUES = (1, 2, True)
 
 CONNECTION_MOCK = MagicMock()
-
-def mocked_getenv(*args, **kwargs):
-  if args[0] == 'DATABASE':
-    return DATABASE
-  elif args[0] == 'DB_HOST':
-    return DB_HOST
-  elif args[0] == 'DB_PASSWORD':
-    return DB_PASSWORD
-  elif args[0] == 'DB_USERNAME':
-    return DB_USERNAME
-  return getenv(*args)
 
 class TestDatabaseInteractor(unittest.TestCase):
   @classmethod
@@ -39,23 +25,17 @@ class TestDatabaseInteractor(unittest.TestCase):
     CONNECTION_MOCK.cursor.return_value = None
     self.databseInteractor.logger.reset_mock()
 
-  @patch('os.getenv', side_effect=mocked_getenv)
   @patch('mysql.connector.connect', return_value=CONNECTION_MOCK)
-  def test_connect_database(self, connect_mock, getenv_mock):
+  def test_connect_database(self, connect_mock):
     self.assertEqual(self.databseInteractor.connection, None)
 
     self.databseInteractor.connect_database()
 
-    getenv_mock.assert_any_call('DATABASE')
-    getenv_mock.assert_any_call('DB_HOST')
-    getenv_mock.assert_any_call('DB_PASSWORD')
-    getenv_mock.assert_any_call('DB_USERNAME')
-
-    connect_mock.assert_called_once_with(
-      database = DATABASE,
-      host = DB_HOST,
-      password = DB_PASSWORD,
-      user = DB_USERNAME
+    connect_mock.assert_called_once_with( # nosec
+      database = 'database',
+      host = 'host',
+      password = 'password', # nosec # noqa
+      user = 'username'
     )
 
     self.assertEqual(self.databseInteractor.connection, CONNECTION_MOCK)
