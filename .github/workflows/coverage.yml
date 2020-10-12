@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  generate-and-upload-coverage:
+    runs-on: ubuntu-latest
+
+    if: github.event.pull_request.merged == true
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Run setup
+        run: |
+          python3 -m pip install -r requirements.txt
+          python3 -m pip install -r requirements-dev.txt
+          
+      - name: Generate coverage
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/generate_coverage.sh
+          sh $GITHUB_WORKSPACE/scripts/generate_coverage.sh
+      
+      - name: Upload coverage
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        run: |
+          chmod +x $GITHUB_WORKSPACE/scripts/upload_coverage.sh
+          sh $GITHUB_WORKSPACE/scripts/upload_coverage.sh
+     
