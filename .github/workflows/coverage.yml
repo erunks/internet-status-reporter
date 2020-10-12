@@ -1,4 +1,4 @@
-name: CI
+name: CodacyCoverageWorkflow
 
 on:
   push:
@@ -8,7 +8,6 @@ jobs:
   generate-and-upload-coverage:
     runs-on: ubuntu-latest
 
-    if: github.event.pull_request.merged == true
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -26,10 +25,10 @@ jobs:
           chmod +x $GITHUB_WORKSPACE/scripts/generate_coverage.sh
           sh $GITHUB_WORKSPACE/scripts/generate_coverage.sh
       
+      - uses: actions/checkout@master
       - name: Upload coverage
-        env:
-          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        run: |
-          chmod +x $GITHUB_WORKSPACE/scripts/upload_coverage.sh
-          sh $GITHUB_WORKSPACE/scripts/upload_coverage.sh
+        uses: codacy/codacy-coverage-reporter-action@master
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: $GITHUB_WORKSPACE/coverage.xml
      
