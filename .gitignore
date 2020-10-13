@@ -7,5 +7,5 @@ __pycache__/
 .codacy-coverage/
 .coverage
 .pytest_cache/
+coverage.xml
 htmlcov/
-
