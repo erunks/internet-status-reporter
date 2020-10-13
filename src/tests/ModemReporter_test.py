@@ -5,7 +5,7 @@ from freezegun import freeze_time
 from unittest.mock import MagicMock, patch
 from src.ModemReporter import ModemReporter
 
-load_dotenv(find_dotenv(".env.test"))
+load_dotenv(find_dotenv(".env.test"), override=True)
 
 MODEM_ADDRESS = 'http://0.0.0.0'
 

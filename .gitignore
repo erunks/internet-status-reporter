@@ -1,9 +1,11 @@
+.actrc
 .env
 *log.*
 
 # Testing and Coverage
 __pycache__/
+.codacy-coverage/
+.coverage
 .pytest_cache/
 htmlcov/
 
-.coverage
