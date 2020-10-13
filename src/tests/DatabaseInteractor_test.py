@@ -4,7 +4,7 @@ from mysql.connector import Error as DB_Error, ProgrammingError, errorcode
 from unittest.mock import MagicMock, patch
 from src.DatabaseInteractor import DatabaseInteractor
 
-load_dotenv(find_dotenv(".env.test"))
+load_dotenv(find_dotenv(".env.test"), override=True)
 
 SQL = 'sql string'
 VALUES = (1, 2, True)
