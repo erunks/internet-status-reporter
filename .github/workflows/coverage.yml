@@ -1,8 +1,6 @@
 name: CodacyCoverageWorkflow
 
 on:
-  pull_request:
-    branches: [ master ]
   push:
     branches: [ master ]
 
@@ -28,10 +26,9 @@ jobs:
           chmod +x $GITHUB_WORKSPACE/scripts/generate_coverage.sh
           sh $GITHUB_WORKSPACE/scripts/generate_coverage.sh
       
-      - uses: actions/checkout@master
       - name: Upload coverage
         uses: codacy/codacy-coverage-reporter-action@master
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: coverage.xml
+          coverage-reports: $GITHUB_WORKSPACE/coverage.xml
      
