@@ -21,7 +21,7 @@ class ModemReporter(DatabaseInteractor):
   def __setup_browser(self):
     from mechanicalsoup import StatefulBrowser
 
-    self.browser = StatefulBrowser()
+    self.browser = StatefulBrowser(soup_config={'features': 'html.parser'})
     self.browser.set_verbose(2)
 
   def run(self):

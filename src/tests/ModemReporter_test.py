@@ -246,7 +246,7 @@ class TestModemReporter(unittest.TestCase):
 
     page_mock = MagicMock()
     self.modemReporter.browser.get_current_page.return_value = page_mock
-    page_mock.find.return_value = BeautifulSoup(TABLE_ROWS_SOUP, 'lxml')
+    page_mock.find.return_value = BeautifulSoup(TABLE_ROWS_SOUP, 'html.parser')
 
     self.assertEqual(
       self.modemReporter.scrape_events(),
