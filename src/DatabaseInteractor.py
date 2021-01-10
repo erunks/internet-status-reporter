@@ -58,7 +58,7 @@ class DatabaseInteractor(MailLogger):
     except:
       self.logger.exception(f'Unexpected error: {exc_info()[0]}')
       self.logger.info(f'SQL to execute: {sql}')
-      self.logger.indo(f'Values: {values}')
+      self.logger.info(f'Values: {values}')
 
   def execute_sql_with_commit(self, sql, values = None):
     try:
@@ -73,4 +73,4 @@ class DatabaseInteractor(MailLogger):
     except:
       self.logger.exception(f'Unexpected error: {exc_info()[0]}')
       self.logger.info(f'SQL to execute: {sql}')
-      self.logger.indo(f'Values: {values}')
+      self.logger.info(f'Values: {values}')
