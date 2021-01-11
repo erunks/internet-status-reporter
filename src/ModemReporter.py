@@ -80,7 +80,7 @@ class ModemReporter(DatabaseInteractor):
     try:
       self.connect_database()
       sql = "INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES "
-      value_string = '(%s, %s, %s, %s)'
+      value_string = '("%s", %s, "%s", %s)'
 
       event_datetime = None
       value_list = []
