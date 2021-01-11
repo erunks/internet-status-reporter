@@ -139,7 +139,7 @@ class TestModemReporter(unittest.TestCase):
       ['Wed Sep 09 11:00:00 2020', 'Error (4)', 'The description'],
       ['Thu Sep 10 09:00:00 2020', 'Error (4)', 'The description']
     ]
-    SQL_QUERY = "INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES (The description, 4, 2020-09-09 11:00:00, False), (The description, 4, 2020-09-10 09:00:00, False)"
+    SQL_QUERY = 'INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES ("The description", 4, "2020-09-09 11:00:00", False), ("The description", 4, "2020-09-10 09:00:00", False)'
     cursor_mock = MagicMock()
     CONNECTION_MOCK.cursor.return_value = cursor_mock
     connect_mock.return_value = CONNECTION_MOCK
@@ -161,7 +161,7 @@ class TestModemReporter(unittest.TestCase):
       ['Time Not Established', 'Error (4)', 'The description'],
       ['Time Not Established', 'Error (4)', 'The description']
     ]
-    SQL_QUERY = "INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES (The description, 4, 2020-09-15 13:05:00, False), (The description, 4, 2020-09-15 13:05:00, False), (The description, 4, 2020-09-15 13:05:00, False)"
+    SQL_QUERY = 'INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES ("The description", 4, "2020-09-15 13:05:00", False), ("The description", 4, "2020-09-15 13:05:00", False), ("The description", 4, "2020-09-15 13:05:00", False)'
     cursor_mock = MagicMock()
     CONNECTION_MOCK.cursor.return_value = cursor_mock
     connect_mock.return_value = CONNECTION_MOCK
@@ -182,7 +182,7 @@ class TestModemReporter(unittest.TestCase):
       ['Wed Sep 09 11:00:00 2020', 'Error (4)', 'The description'],
       ['Thu Sep 10 09:00:00 2020', 'Error (4)', 'The description']
     ]
-    SQL_QUERY = "INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES (The description, 4, 2020-09-09 11:00:00, False), (The description, 4, 2020-09-09 11:00:00, False), (The description, 4, 2020-09-10 09:00:00, False)"
+    SQL_QUERY = 'INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES ("The description", 4, "2020-09-09 11:00:00", False), ("The description", 4, "2020-09-09 11:00:00", False), ("The description", 4, "2020-09-10 09:00:00", False)'
     cursor_mock = MagicMock()
     CONNECTION_MOCK.cursor.return_value = cursor_mock
     connect_mock.return_value = CONNECTION_MOCK
@@ -197,13 +197,13 @@ class TestModemReporter(unittest.TestCase):
     CONNECTION_MOCK.close.assert_called_once()
 
   @patch('mysql.connector.connect')
-  def test_report_events_when_an_later_event_has_no_time_established(self, connect_mock):
+  def test_report_events_when_a_later_event_has_no_time_established(self, connect_mock):
     EVENTS = [
       ['Wed Sep 09 11:00:00 2020', 'Error (4)', 'The description'],
       ['Thu Sep 10 09:00:00 2020', 'Error (4)', 'The description'],
       ['Time Not Established', 'Error (4)', 'The description']
     ]
-    SQL_QUERY = "INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES (The description, 4, 2020-09-09 11:00:00, False), (The description, 4, 2020-09-10 09:00:00, False), (The description, 4, 2020-09-10 09:00:00, False)"
+    SQL_QUERY = 'INSERT INTO `modem_events` (`description`, `priority`, `created_at`, `maintenance`) VALUES ("The description", 4, "2020-09-09 11:00:00", False), ("The description", 4, "2020-09-10 09:00:00", False), ("The description", 4, "2020-09-10 09:00:00", False)'
     cursor_mock = MagicMock()
     CONNECTION_MOCK.cursor.return_value = cursor_mock
     connect_mock.return_value = CONNECTION_MOCK
