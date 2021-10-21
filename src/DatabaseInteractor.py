@@ -3,11 +3,8 @@ from src.MailLogger import MailLogger
 
 class DatabaseInteractor(MailLogger):
   def __init__(self):
-    from dotenv import load_dotenv, find_dotenv
 
     super().__init__()
-    load_dotenv(find_dotenv())
-
     self.connection = None
 
   def __del__(self):

@@ -2,12 +2,9 @@ from src.DatabaseInteractor import DatabaseInteractor
 
 class ModemReporter(DatabaseInteractor):
   def __init__(self):
-    from dotenv import load_dotenv, find_dotenv
     from os import getenv
 
     super().__init__()
-
-    load_dotenv(find_dotenv())
 
     MODEM_ADDRESS = getenv('MODEM_ADDRESS')
 
