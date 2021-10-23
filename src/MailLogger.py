@@ -1,11 +1,8 @@
 class MailLogger:
   def __init__(self):
-    from dotenv import load_dotenv, find_dotenv
     from logging import ERROR, INFO, basicConfig, getLogger, Formatter
     from src.MailHandler import MailHandler
     from os import getenv
-
-    load_dotenv(find_dotenv())
 
     logFormat = '%(asctime)s - %(levelname)s: %(message)s'
     basicConfig(

@@ -5,12 +5,9 @@ from src.ModemReporter import ModemReporter
 
 class InternetStatusReporter(DatabaseInteractor):
   def __init__(self):
-    from dotenv import load_dotenv, find_dotenv
     from src.utils import get_addresses
 
     super().__init__()
-
-    load_dotenv(find_dotenv())
 
     self.NETWORK_STATUS = {
       'NORMAL': 0,

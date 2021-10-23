@@ -1,8 +1,10 @@
 import unittest
+from dotenv import load_dotenv, find_dotenv
 from freezegun import freeze_time
 from unittest.mock import MagicMock, patch
 from src.InternetStatusReporter import InternetStatusReporter
 
+load_dotenv(find_dotenv(".env.test"), override=True)
 class TestInternetStatusReporter(unittest.TestCase):
   @classmethod
   def setUpClass(self):

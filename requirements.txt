@@ -3,4 +3,5 @@ MechanicalSoup
 mysql.connector
 pingparsing
 python-dotenv
+sentry-sdk
 tcp-latency

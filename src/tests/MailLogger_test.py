@@ -1,7 +1,9 @@
+from dotenv import load_dotenv, find_dotenv
 import unittest
 from unittest.mock import MagicMock, patch
 from src.MailLogger import MailLogger
 
+load_dotenv(find_dotenv(".env.test"), override=True)
 class TestMailLogger(unittest.TestCase):
   @classmethod
   def setUpClass(self):
