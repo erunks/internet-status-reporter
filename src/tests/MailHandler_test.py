@@ -1,8 +1,10 @@
+from dotenv import load_dotenv, find_dotenv
 import re
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 from src.MailHandler import MailHandler
 
+load_dotenv(find_dotenv(".env.test"), override=True)
 class TestMailHandler(unittest.TestCase):
   @classmethod
   def setUpClass(self):
