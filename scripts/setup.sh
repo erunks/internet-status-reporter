@@ -52,19 +52,18 @@ fi
 if [ "$POETRY_MET" != "true" ]; then
 	echo "Checking if poetry is installed..."
 
-	POETRY_REGEX='^Poetry\ version\ (\d+\.?){3}$'
+	POETRY_REGEX='^Poetry\ version\ .+$'
 	POETRY_VERSION="$(poetry --version)"
 	if [[ $POETRY_VERSION =~ $POETRY_REGEX ]]; then
 		echo $REQ_MET
-		POETRY_MET=true
 	else
 		echo "Poetry is not installed!"
 		echo "Installing poetry..."
 
 		$("curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -")
 		exec bash
-		POETRY_MET=true
 	fi
+	POETRY_MET=true
 fi
 
 if [ "$PYTHON_MET" = "true" ] && [ "$PIP_MET" = "true" ] && [ "$POETRY_MET" = "true" ]; then
