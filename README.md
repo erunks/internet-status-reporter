@@ -4,10 +4,14 @@
 
 Since it seems inevitable that an ISP will suck at giving a reliable connection, I've decided to build this app to report all the internet outtages that occur.
 
+### Prerequisits
+- [Python 3.6+](https://www.python.org/downloads/)
+- [Poetry](https://python-poetry.org/docs/#installation)
+
 ### Setup
 1. Clone the repo onto a machine that will be running for the marjority of the time (I used an old Raspberry Pi for this)
 2. Get Python3.6+ installed along with `pip`
-3. Install the required modules with `python3 -m pip install -r requirements.txt`
+3. Install the required modules with `poetry install`
 4. Setup a MySQL database somewhere, and the `modem_events` and `outtages` table with the following SQL:
   ```
    CREATE TABLE `outtages` (
@@ -31,7 +35,7 @@ Since it seems inevitable that an ISP will suck at giving a reliable connection,
 6. Setup a cronjob to run the script, with `crontab -e` and append the following lines to the end of the file:
   ```
    # This runs the app every minute. It is possible that this could miss some outtages if the app runs too quickly
-   */1 * * * * cd <path_to_repo>/internet-status-reporter/ && flock -n /tmp/ISR.lck python3 app.py
+   */1 * * * * cd <path_to_repo>/internet-status-reporter/ && flock -n /tmp/ISR.lck poetry run python app.py
       
    # Note the `flock -n /tmp/ISR.lck` part of the cronjob abvoe makes it so that only one instance of the program is 
    # allowed to be run at a time. This is optional, but does provide more accurate reporting. If you decide to add 

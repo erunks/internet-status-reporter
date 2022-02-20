@@ -2,7 +2,7 @@ name: CodacyCoverageWorkflow
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   generate-and-upload-coverage:
@@ -15,10 +15,12 @@ jobs:
         with:
           python-version: 3.6
 
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
       - name: Run setup
         run: |
-          python3 -m pip install -r requirements.txt
-          python3 -m pip install -r requirements-dev.txt
+          poetry install
           cp .env.sample .env
           
       - name: Generate coverage

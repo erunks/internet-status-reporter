@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build-and-test:
@@ -17,10 +17,12 @@ jobs:
         with:
           python-version: 3.6
 
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
       - name: Run setup
         run: |
-          python3 -m pip install -r requirements.txt
-          python3 -m pip install -r requirements-dev.txt
+          poetry install
           cp .env.sample .env
           
       - name: Run tests

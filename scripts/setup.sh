@@ -7,6 +7,7 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 REQ_MET="Requirements met!"
 PYTHON_MET=false
 PIP_MET=false
+POETRY_MET=false
 
 PIP3_REGEX='^pip.+(python\ 3.[6-9].+)$'
 PYTHON3_6_REGEX='^Python\ 3\.[6-9].+$'
@@ -48,8 +49,26 @@ if [ "$PIP_MET" != "true" ]; then
 	fi
 fi
 
-if [ "$PYTHON_MET" = "true" ] && [ "$PIP_MET" = "true" ]; then
+if [ "$POETRY_MET" != "true" ]; then
+	echo "Checking if poetry is installed..."
+
+	POETRY_REGEX='^Poetry\ version\ (\d+\.?){3}$'
+	POETRY_VERSION="$(poetry --version)"
+	if [[ $POETRY_VERSION =~ $POETRY_REGEX ]]; then
+		echo $REQ_MET
+		POETRY_MET=true
+	else
+		echo "Poetry is not installed!"
+		echo "Installing poetry..."
+
+		$("curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -")
+		exec bash
+		POETRY_MET=true
+	fi
+fi
+
+if [ "$PYTHON_MET" = "true" ] && [ "$PIP_MET" = "true" ] && [ "$POETRY_MET" = "true" ]; then
 	echo "Installing requirements..."
 	cd $DIR/..
-	python3 -m pip install -r requirements.txt
+	poetry install
 fi

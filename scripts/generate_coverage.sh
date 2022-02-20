@@ -1,4 +1,4 @@
 #!/bin/bash
-python3 -m coverage run --source=. -m unittest -v src/tests/*_test.py &&
-python3 -m coverage xml &&
-python3 -m coverage html
+poetry run python -m coverage run --source=. -m unittest -v src/tests/*_test.py &&
+poetry run python -m coverage xml &&
+poetry run python -m coverage html
