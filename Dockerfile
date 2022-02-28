@@ -1,4 +1,4 @@
-FROM acaratti/pypoet:3.9-arm
+FROM acaratti/pypoet:3.9
 
 RUN apt-get update
 RUN apt-get install libxml2-dev libxslt-dev
