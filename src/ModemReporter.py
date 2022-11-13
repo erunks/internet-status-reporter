@@ -14,6 +14,7 @@ class ModemReporter(DatabaseInteractor):
       'home': MODEM_ADDRESS,
       'logout': MODEM_ADDRESS + '/logout.asp'
     }
+    self.enabled = bool(int(getenv('MODEM_REPORTING')))
 
   def __setup_browser(self):
     from mechanicalsoup import StatefulBrowser
@@ -22,9 +23,10 @@ class ModemReporter(DatabaseInteractor):
     self.browser.set_verbose(2)
 
   def run(self):
-    self.login()
-    self.report_events(self.scrape_events())
-    self.logout()
+    if self.enabled:
+        self.login()
+        self.report_events(self.scrape_events())
+        self.logout()
 
   def filter_event_logs(self, event_logs):
     last_event = self.get_last_logged_event()
