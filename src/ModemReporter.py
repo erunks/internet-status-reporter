@@ -14,7 +14,11 @@ class ModemReporter(DatabaseInteractor):
       'home': MODEM_ADDRESS,
       'logout': MODEM_ADDRESS + '/logout.asp'
     }
-    self.enabled = bool(int(getenv('MODEM_REPORTING')))
+
+    try:
+        self.enabled = bool(int(getenv('MODEM_REPORTING')))
+    except:
+        self.enabled = False
 
   def __setup_browser(self):
     from mechanicalsoup import StatefulBrowser
