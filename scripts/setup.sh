@@ -9,8 +9,8 @@ PYTHON_MET=false
 PIP_MET=false
 POETRY_MET=false
 
-PIP3_REGEX='^pip.+(python\ 3.[6-9].+)$'
-PYTHON3_6_REGEX='^Python\ 3\.[6-9].+$'
+PIP3_REGEX='^pip.+(python\ 3\.([6-9]|1[0-9]).+)$'
+PYTHON3_6_REGEX='^Python\ 3\.([6-9]|1[0-9]).+$'
 PYTHON_VERSION="$( python --version )"
 PYTHON3_VERSION="$( python3 --version )"
 
@@ -61,8 +61,7 @@ if [ "$POETRY_MET" != "true" ]; then
 		echo "Poetry is not installed!"
 		echo "Installing poetry..."
 
-		$("curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -")
-		exec bash
+		$("curl -sSL https://install.python-poetry.org | python3 - --version 1.1.15")
 		POETRY_MET=true
 	fi
 fi
