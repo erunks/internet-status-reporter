@@ -221,13 +221,27 @@ class TestModemReporter(unittest.TestCase):
   @patch.object(ModemReporter, 'logout')
   @patch.object(ModemReporter, 'report_events')
   @patch.object(ModemReporter, 'scrape_events')
-  def test_run(self, login_mock, logout_mock, report_events_mock, scrape_events_mock):
+  def test_run_when_enabled(self, login_mock, logout_mock, report_events_mock, scrape_events_mock):
+    self.modemReporter.enabled = True
     self.modemReporter.run()
 
     login_mock.assert_called_once()
     scrape_events_mock.assert_called_once()
     report_events_mock.assert_called_once()
     logout_mock.assert_called_once()
+
+  @patch.object(ModemReporter, 'login')
+  @patch.object(ModemReporter, 'logout')
+  @patch.object(ModemReporter, 'report_events')
+  @patch.object(ModemReporter, 'scrape_events')
+  def test_run_when_not_enabled(self, login_mock, logout_mock, report_events_mock, scrape_events_mock):
+    self.modemReporter.enabled = False
+    self.modemReporter.run()
+
+    login_mock.assert_not_called()
+    scrape_events_mock.assert_not_called()
+    report_events_mock.assert_not_called()
+    logout_mock.assert_not_called()
 
   def test_scrape_events(self):
     from bs4 import BeautifulSoup
